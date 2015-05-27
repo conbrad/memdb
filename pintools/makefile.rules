@@ -11,7 +11,10 @@
 # Tools targets
 #
 ##############################################################
-TEST_TOOL_ROOTS := memtracker memoryleaker null procinstr showprocs-dynamic showprocs-static straggler-catcher
+TEST_TOOL_ROOTS := memtracker
+
+# Removed: memoryleaker null procinstr showprocs-dynamic showprocs-static straggler-catcher
+# from above line, since we're only compiling the memtracker tool
 
 TOOL_LIBS += -L. -ldebug_info -lrt 
 TOOL_CXXFLAGS += -std=c++0x -g -Wno-error=format-contains-nul -Wno-format-contains-nul -Wno-write-strings
