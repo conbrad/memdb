@@ -31,8 +31,8 @@
 #include <algorithm>
 #include <map>
 
-#include "varinfo.hpp"
-#include "scoping.h"
+#include "../memtracker/varinfo.hpp"
+#include "../memtracker/scoping.h"
 
 
 //#define DEBUG_PRINT

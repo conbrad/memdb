@@ -2,12 +2,13 @@
 /// as pairs of opened and closed brackets '{..}'.
 ///
 /// Sep - 2014, Nik Zaborovsky
+#include "../memtracker/scoping.h"
+
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include "scoping.h"
 
 namespace {
 	struct tri_t {

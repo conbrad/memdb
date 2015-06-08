@@ -10,7 +10,8 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "varinfo_i.hpp"
+
+#include "../memtracker/varinfo_i.hpp"
 
 
 class VarInfo : public IVarInfo {

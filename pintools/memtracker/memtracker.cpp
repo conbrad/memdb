@@ -45,7 +45,7 @@ END_LEGAL */
 #include <sys/syscall.h>
 #include "pin.H"
 
-#include "varinfo.hpp"
+#include "../memtracker/varinfo.hpp"
 
 /* ===================================================================== */
 /* Global Variables */
