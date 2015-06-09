@@ -4,7 +4,7 @@
 
 If you want memtracker to be able to know where in your code true or false sharing occurs as well as the names and types of the shared variables, compile your code with debug symbols. Run your program (under the pintool) on the same system where you compiled your program and don't remove or move the source files. (If you are running on a different system, make sure that the source files are in the same absolute path as they were on the system where the program or the library was compiled).
 
-**Read about [configuring](docs/memtracker_configuring) the tool (below) before running it!**
+**Read about [configuring](memtracker_configuring.md) the tool before running it!**
 
 To run:
 
