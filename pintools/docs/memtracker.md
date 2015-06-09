@@ -10,7 +10,7 @@ The tool has some nice features enabling it to work with real production code.
 * It tracks source location of memory accesses (for binaries with debug information) and the names of the accessed variables (for variables allocated on the heap via the tracked allocation functions you identified). 
 
 ### HOW TO USE THE TOOL:
-1. [Building](pintools/docs/memtracker_building.md)
-2. [Configuring](pintools/docs/memtracker_configuring.md)
-3. [Running](pintools/docs/memtracker_running.md)
-4. [Eclipse set up instructions](pintools/docs/memtracker_eclipse.md)
+1. [Building](memtracker_building.md)
+2. [Configuring](memtracker_configuring.md)
+3. [Running](memtracker_running.md)
+4. [Eclipse set up instructions](memtracker_eclipse.md)
