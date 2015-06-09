@@ -60,3 +60,18 @@ __wt_calloc              1       2     3
 ```
 
 You see three additional records here corresponding to the __wt_calloc-wrapping macros. They appear directly under the signature for __wt_calloc (this is required) and are prefixed with an "!". Other than that, they have the same format as the simple function-signature record, except the fields <arg_id_of_number> and <arg_id_of_size> are not used. We only care about <arg_id_of_addr>.
+
+
+##### Limiting the scope of tracking memory accesses
+
+Tracking every memory access in the entire program is very expensive. It will produce very large traces (roughly 1GB for every second of single-threaded execution) and will significantly slow down the program (more than 10,000 times). To limit these effects, you may opt to track memory accesses only within a function of interest (and its descendants). For instance, if you determined by profiling your code that function foo() slows down when run with multiple threads and you want to see whether there is some true or false sharing that is responsible for the slowdown, you can tell the memtracker to only track memory accesses in foo() and its descendants. 
+
+To do so, you use the -f option to the pintool and provide the file name that has the names of the functions of interest. For example, suppose you put your problematic functions in the file funcs.in. Then you would invoke the tool as follows: 
+
+```
+pin.sh -t $CUSTOM_PINTOOLS_HOME/obj-intel64/memtracker.so -f funcs.in -- <your program with arguments>
+```
+
+By default, memtracker looks for the scope-limiting functions in the file memtracker.in (located in the working directory) even if you don't use the -f option. 
+
+For an example of a valid configuration file, take a look at scripts/memtracker.in.

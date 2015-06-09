@@ -13,4 +13,5 @@ The tool has some nice features enabling it to work with real production code.
 1. [Building](memtracker_building.md)
 2. [Configuring](memtracker_configuring.md)
 3. [Running](memtracker_running.md)
-4. [Eclipse set up instructions](memtracker_eclipse.md)
+4. [Memtracker Traces](memtracker_traces.md)
+5. [Eclipse set up instructions](memtracker_eclipse.md)
