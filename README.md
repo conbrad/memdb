@@ -5,9 +5,9 @@ This repository contains a family of tools to track memory accesses in applicati
 
 At the moment, the tools allow you to detect sharing (true and false) in multithreaded C applications in order to debug scalability problems. To visualize data sharing in your application, you need to use the following three tools in the order that they are listed:
 
-* [memtracker](docs/memtracker.md) -- a Pin tool to collect a detailed memory trace of your running application
-* [memtracker2json](docs/memtracker2json.md) -- a script that converts the Pin trace to JSON format
-* [memvis](docs/memvis.md) -- a tool that analyzes the JSON trace and produces HTML and JavaScript to visualize it.
+* [memtracker](pintools/docs/memtracker.md) -- a Pin tool to collect a detailed memory trace of your running application
+* [memtracker2json](pintools/docs/memtracker2json.md) -- a script that converts the Pin trace to JSON format
+* [memvis](pintools/docs/memvis.md) -- a tool that analyzes the JSON trace and produces HTML and JavaScript to visualize it.
 
 You can run them sequentially or as a pipeline. If you run them sequentially, what needs to happen is this:
 
