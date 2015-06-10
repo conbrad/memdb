@@ -34,6 +34,8 @@
 #include <tuple>
 #include <memory>
 
+#include "cache-waste-analysis.h"
+
 /* The following data structures are used to summarize
  * the cache waste per source location.
  */
@@ -46,8 +48,6 @@ using namespace std;
 #define VERBOSE 0
 
 bool WANT_RAW_OUTPUT = 0;
-
-#define MAX_LINE_SIZE 64 /* We need this in order to use the bitset class */
 
 /* Default cache size parameters for a 2MB 4-way set associative cache */
 int NUM_SETS = 8*1024;
@@ -477,49 +477,10 @@ void parseAndSimulate(string line, Cache *c)
  * display them in a user-friendly way. We will group the records
  * by source code line(access site) and display them in the order of decreasing
  * waste occurrences.
- *
-void summarizeZeroReuseMap()
-{
+*/
 
-    /* Iterate the map. Once we encounter a new source line,
-     * count the number of its associated waste records, 
-     * put that in the summarized map, where the count is the key, 
-     * and the value is the list (vector) of associated waste records.
-     *
-    for(auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) 
-    {
-	string curAccessSite = "";
-	vector<ZeroReuseRecord> curVector;
-
-	curAccessSite = it->first;
-	cout << curAccessSite << endl;
-	do 
-	{
-	    curVector.push_back(it->second);
-	    ++it;
-	} while (it != zeroReuseMap.end() && curAccessSite.compare(it->first)==0);
-	/*
-	cout << "Out of the while loop " << endl;
-
-	  cout << it->first << endl;
-	else
-	  cout << "NULL " << endl;
-	*
-	
-	tuple<string, vector<ZeroReuseRecord>> gRecs = make_tuple(curAccessSite, curVector); 
-	groupedZeroReuseMap.insert(make_pair(curVector.size(), gRecs));	
-	
-	if(it == zeroReuseMap.end())
-	  break;
-    }
-    }*/
-
-/* 
- * This is essentially a duplication of the code above. Only the types
- * are different. Got to rewrite it to be one function. 
- */
 template <class T>
-void summarizeWasteMap(unordered_multimap<string, T> &ungroupedMap,
+void summarizeMap(unordered_multimap<string, T> &ungroupedMap,
 		       multimap<int, tuple<string, vector<T>>> &groupedMap)
 {
 
@@ -684,13 +645,13 @@ int main(int argc, char *argv[])
     }
 
     //summarizeZeroReuseMap();
-    summarizeWasteMap<ZeroReuseRecord>(zeroReuseMap, groupedZeroReuseMap);
+    summarizeMap<ZeroReuseRecord>(zeroReuseMap, groupedZeroReuseMap);
     cout << "*************************************************" << endl;
     cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
     cout << "*************************************************" << endl;
     printSummarizedMap<ZeroReuseRecord>(groupedZeroReuseMap);
 
-    summarizeWasteMap<LowUtilRecord>(lowUtilMap, groupedLowUtilMap);
+    summarizeMap<LowUtilRecord>(lowUtilMap, groupedLowUtilMap);
     cout << endl;
     cout << "*************************************************" << endl;
     cout << "         LOW UTILIZATION MAP SUMMARIZED          " << endl;
