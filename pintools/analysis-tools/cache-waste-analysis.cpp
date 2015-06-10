@@ -42,7 +42,6 @@
 #include "zero-reuse-record.h"
 
 using namespace std;
-using std::make_pair;
 
 #define VERBOSE 0
 
@@ -84,8 +83,9 @@ multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
  * before being evicted. 
  */
 
-class CacheLine
-{
+class CacheLine {
+
+private:
     int lineSize;     /* In bytes */
 public:
     size_t address;    /* virtual address responsible for populating this cache line */
@@ -104,13 +104,15 @@ public:
     size_t timeStamp;  /* Virtual time of access */
     unsigned short timesReusedBeforeEvicted;
 
-    CacheLine() /* Size is given in bytes */
-	{
-	    lineSize = CACHE_LINE_SIZE; /* this is ugly, but C++ doesn't
-					 * allow to allocate an array and 
-					 * initialize all members with the
-					 * same constructor at the same time. 
-					 */
+    CacheLine() {
+    	/* this is ugly, but C++ doesn't
+    	 * allow to allocate an array and
+    	 * initialize all members with the
+    	 * same constructor at the same time.
+    	*/
+
+    	/* Size is given in bytes */
+	    lineSize = CACHE_LINE_SIZE;
 	    address = 0;
 	    tag = 0;
 	    initAccessSize = 0;
@@ -124,15 +126,13 @@ public:
 
     /* Print info about the access that caused this line to be 
      * brought into the cache */
-    void printFaultingAccessInfo()
-	{
+    void printFaultingAccessInfo() {
 	    cout<< "0x" << hex << address << dec << " " << initAccessSize << " "
 		<< accessSite << varInfo << endl;
 	}
 
     void setAndAccess(size_t address, unsigned short accessSize, 
-		      string accessSite, string varInfo, size_t timeStamp)
-	{
+		      string accessSite, string varInfo, size_t timeStamp) {
 	    this->address = address;
 	    this->initAccessSize = accessSize;
 	    tag = address >> tagMaskBits;
@@ -144,10 +144,9 @@ public:
 	    access(address, accessSize, timeStamp);
 	}
 
-    bool valid(size_t address)
-	{
+    bool valid(size_t address) {
 	    if(address >> tagMaskBits == tag)
-		return true;
+	    	return true;
 	    
 	    return false;
 	}
@@ -158,8 +157,7 @@ public:
      * If those bits are already marked as accessed, we increment
      * the reuse counter.
      */
-    void access(size_t address, unsigned short accessSize, size_t timeStamp)
-	{
+    void access(size_t address, unsigned short accessSize, size_t timeStamp) {
 	    int lineOffset = address % lineSize;
 	    
 	    assert(valid(address));
@@ -171,23 +169,22 @@ public:
 	     * we access the same valid address twice, the data represents
 	     * the same variable (and thus the same access size) as before
 	     */
-	    if(bytesUsed->test(lineOffset))
-		timesReusedBeforeEvicted++;
-	    else
-	    {
-		for(int i = lineOffset; i < min(lineOffset + accessSize, lineSize); i++)
-		    bytesUsed->set(i);
+	    if(bytesUsed->test(lineOffset)) {
+	    	timesReusedBeforeEvicted++;
+	    } else {
+	    	for(int i = lineOffset; i < min(lineOffset + accessSize, lineSize); i++) {
+	    		bytesUsed->set(i);
+	    	}
 	    }
 	}    
     
-    void evict()
-	{
+    void evict() {
+
 	    /* We are being evicted. Print our stats, update waste maps and clear. */
-	    if(WANT_RAW_OUTPUT)
-	    {
-		cout << bytesUsed->count() << "\t" << timesReusedBeforeEvicted 
-		     << "\t" << accessSite << "[" << varInfo << "]\t" 
-		     << "0x" << hex << address << dec << endl;
+	    if(WANT_RAW_OUTPUT) {
+	    	cout << bytesUsed->count() << "\t" << timesReusedBeforeEvicted
+	    			<< "\t" << accessSite << "[" << varInfo << "]\t"
+					<< "0x" << hex << address << dec << endl;
 	    }
 
 	    if(timesReusedBeforeEvicted == 0) {
@@ -202,7 +199,6 @@ public:
 					   LowUtilRecord(varInfo, address, bytesUsed->count())));
 	    }
 
-
 	    address = 0;
 	    tag = 0;
 	    accessSite = "";
@@ -211,12 +207,9 @@ public:
 	    bytesUsed->reset();
 	}
 
-    void printParams()
-	{
+    void printParams() {
 	    cout << "Line size = " << lineSize << endl;
 	}
-
-	   
 };
 
 

@@ -1,6 +1,6 @@
 all: libdebug pintool cache
 
-cache:
+cache:	
 	cd analysis-tools && $(MAKE)
 
 libdebug: 

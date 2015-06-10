@@ -12,7 +12,7 @@ The second prerequisite is to have libelf and libdwarf libraries installed. Thos
 #### Building:
 
 ```
-% git clone https://github.com/DataChi/memdb
+% git clone https://github.com/conbrad/memdb.git
 % cd memdb/pintools
 % make
 ```
