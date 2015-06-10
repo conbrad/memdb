@@ -32,8 +32,17 @@
 #include <algorithm>
 #include <unordered_map>
 #include <tuple>
+#include <memory>
+
+/* The following data structures are used to summarize
+ * the cache waste per source location.
+ */
+#include "waste-record.h"
+#include "low-util-record.h"
+#include "zero-reuse-record.h"
 
 using namespace std;
+using std::make_pair;
 
 #define VERBOSE 0
 
@@ -55,58 +64,6 @@ const float LOW_UTIL_THRESHOLD = 0.5;
 int lineOffsetBits;
 int indexBits;
 int tagMaskBits;
-
-/* The following data structures are used to summarize
- * the cache waste per source location. 
- */
-class WasteRecord
-{
-public:
-    string varInfo;
-    size_t address;
-
-    WasteRecord(string vI = "", size_t addr=0)
-	: varInfo(vI), address(addr){}
-};
-    
-
-class ZeroReuseRecord: public WasteRecord
-{
-public:
-    ZeroReuseRecord(string vI, size_t addr)
-	{
-	    varInfo = vI;
-	    address = addr;
-	}
-
-    friend std::ostream& operator<< (std::ostream& stream, const ZeroReuseRecord& zrr)
-	{
-	    cout << "\t" << zrr.varInfo << endl;
-	    cout << "\t0x" << hex << zrr.address << dec << endl;
-	}
-};
-
-class LowUtilRecord: public WasteRecord
-{
-public:
-    int byteUseCount;
-
-    LowUtilRecord(string vI, size_t addr, int bC)
-	{
-	    this->varInfo = vI;
-	    this->byteUseCount = bC;
-	    this->address = addr;
-	}
-
-    friend std::ostream& operator<< (std::ostream& stream, const LowUtilRecord& lur)
-	{
-	    cout << "\t--------------------------------------------" << endl;
-	    cout << "\t" << lur.varInfo << endl;
-	    cout << "\t0x" << hex << lur.address << dec << endl;
-	    cout << "\t" << lur.byteUseCount << "/" << CACHE_LINE_SIZE << endl;
-	}
-
-};
 
 unordered_multimap <string, ZeroReuseRecord> zeroReuseMap;
 unordered_multimap <string, LowUtilRecord> lowUtilMap;
@@ -225,7 +182,6 @@ public:
     
     void evict()
 	{
-
 	    /* We are being evicted. Print our stats, update waste maps and clear. */
 	    if(WANT_RAW_OUTPUT)
 	    {
@@ -234,17 +190,16 @@ public:
 		     << "0x" << hex << address << dec << endl;
 	    }
 
-	    if(timesReusedBeforeEvicted == 0)
-	    {
-		zeroReuseMap.insert(pair<string, ZeroReuseRecord>
-				    (accessSite, 
-				     ZeroReuseRecord(varInfo, address)));
+	    if(timesReusedBeforeEvicted == 0) {
+	    	zeroReuseMap.insert(pair<string, ZeroReuseRecord>
+	    					    (accessSite,
+	    					     ZeroReuseRecord(varInfo, address)));
 	    }
-	    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD)
-	    {
-		lowUtilMap.insert(pair<string, LowUtilRecord>
-				  (accessSite, 
-				   LowUtilRecord(varInfo, address, bytesUsed->count())));
+
+	    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
+			lowUtilMap.insert(pair<string, LowUtilRecord>
+					  (accessSite,
+					   LowUtilRecord(varInfo, address, bytesUsed->count())));
 	    }
 
 
@@ -714,7 +669,7 @@ int main(int argc, char *argv[])
     cout << "               ZERO REUSE MAP                    " << endl;
     cout << "*************************************************" << endl;
 
-    for(auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) 
+    for(auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++)
     {
         cout << it->first << endl;
         cout << (ZeroReuseRecord&) it->second << endl;
@@ -722,16 +677,16 @@ int main(int argc, char *argv[])
     }
 
     cout << endl;
-    
+
     /* Print the waste maps */
     cout << "*************************************************" << endl;
     cout << "               LOW UTILIZATION MAP               " << endl;
     cout << "*************************************************" << endl;
 
-    for(auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++) 
+    for(auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++)
     {
         cout << it->first << endl;
-        cout << (LowUtilRecord&)it->second << endl;
+        cout << it->second << endl;
 
     }
 

@@ -1,2 +1,4 @@
+include ../Makefile.inc
+
 all:
-	g++ -g -std=c++11 -o wa cache-waste-analysis.cpp
+	$(CC) $(FLAGS) waste-record.cpp zero-reuse-record.cpp low-util-record.cpp cache-waste-analysis.cpp -o cache-waste-analysis
