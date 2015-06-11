@@ -14,9 +14,8 @@
 class ZeroReuseRecord: public WasteRecord {
 public:
     ZeroReuseRecord(std::string varInfo, std::size_t address);
+    ~ZeroReuseRecord();
     friend std::ostream& operator<< (std::ostream& stream, const ZeroReuseRecord& zeroReuseRecord);
 };
-
-
 
 #endif /* ZERO_REUSE_RECORD_H_ */

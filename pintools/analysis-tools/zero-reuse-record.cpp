@@ -11,3 +11,5 @@ std::ostream& operator<< (std::ostream& stream, const ZeroReuseRecord& zeroReuse
 	cout << "\t" << zeroReuseRecord.mVarInfo << endl;
 	cout << "\t0x" << hex << zeroReuseRecord.mAddress << dec << endl;
 }
+
+ZeroReuseRecord::~ZeroReuseRecord(){}

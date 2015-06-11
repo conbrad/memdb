@@ -13,17 +13,19 @@
 #include <unordered_map>
 #include "../zero-reuse-record.h"
 #include "../low-util-record.h"
-#include "../cache-waste-analysis.h"
+#include "../main.h"
 
 class CacheLine {
 
 private:
 	/* In bytes */
     int lineSize;
+    int tagMaskBits;
 
     std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
     std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
 public:
+    const float LOW_UTIL_THRESHOLD = 0.5;
     // TODO make fields private for safety
     /* virtual address responsible for populating this cache line */
     std::size_t address;

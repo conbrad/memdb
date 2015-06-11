@@ -8,9 +8,23 @@
 #ifndef CACHE_WASTE_ANALYSIS_H_
 #define CACHE_WASTE_ANALYSIS_H_
 
-extern int CACHE_LINE_SIZE;
-extern int ASSOC;
-extern bool WANT_RAW_OUTPUT;
-#define MAX_LINE_SIZE 64 /* We need this in order to use the bitset class */
+const int VERBOSE = 0;
+
+#include "cache-sim/cache.h"
+
+class CacheWasteAnalysis {
+private:
+    std::string word;
+    size_t address;
+    unsigned short accessSize;
+    std::string accessSite;
+    std::string varInfo;
+    Cache *cache;
+	void verboseOutput(std::string line);
+public:
+	CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize);
+	~CacheWasteAnalysis();
+	void parseAndSimulate(std::string line);
+};
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

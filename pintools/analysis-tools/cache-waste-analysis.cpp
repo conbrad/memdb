@@ -13,22 +13,16 @@
  * - The information on the variable that was accessed upon the faulting access. 
  */
 
-#include <sys/types.h>
 #include <assert.h>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <sys/time.h>
-#include <stdio.h>
 #include <sstream> 
 #include <map>
 #include <utility>
 #include <bitset>
-#include <unistd.h>
-#include <sys/syscall.h>
 #include <ctgmath>
-#include <stdlib.h>
 #include <algorithm>
 #include <unordered_map>
 #include <tuple>
@@ -43,26 +37,19 @@
 #include "low-util-record.h"
 #include "zero-reuse-record.h"
 
-using namespace std;
-
-#define VERBOSE 0
-
-bool WANT_RAW_OUTPUT = 0;
-
-/* Default cache size parameters for a 2MB 4-way set associative cache */
-int NUM_SETS = 8*1024;
-int ASSOC = 4; /* 4-way set associative */
-int CACHE_LINE_SIZE = 64;  /* in bytes */
-
-/* If percent cache line utilization is below that value, 
- * we say that the cache line had a low utilization. 
+/* These data structures relate to cache simulation.
+ * For each line in the cache, we keep track of the address,
+ * the corresponding source code location that performed the
+ * access and whatever we know about the variable name and type,
+ * the number of bytes that were actually used before the cache
+ * line was evicted and how many times the cache lines was used
+ * before being evicted.
  */
-const float LOW_UTIL_THRESHOLD = 0.5;
+#include "cache-sim/cache.h"
+#include "cache-sim/cache-line.h"
+#include "cache-sim/cache-set.h"
 
-/* These values are computed once the cache parameters are set */
-int lineOffsetBits;
-int indexBits;
-int tagMaskBits;
+using namespace std;
 
 unordered_multimap <string, ZeroReuseRecord> zeroReuseMap;
 unordered_multimap <string, LowUtilRecord> lowUtilMap;
@@ -70,346 +57,35 @@ unordered_multimap <string, LowUtilRecord> lowUtilMap;
 multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap;
 multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
 
-/***************************************************************************
- * BEGIN CACHE SIMULATION CODE
-/****************************************************************************/
+CacheWasteAnalysis::CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize) {
+	word = accessSite = varInfo = "";
+	accessSize = 0;
+    address = 0;
+    cache = new Cache(numSets, assoc, cacheLineSize);
+    cache->printParams();
+}
 
-/* These data structures relate to cache simulation. 
- * For each line in the cache, we keep track of the address,
- * the corresponding source code location that performed the
- * access and whatever we know about the variable name and type, 
- * the number of bytes that were actually used before the cache
- * line was evicted and how many times the cache lines was used
- * before being evicted. 
- */
+CacheWasteAnalysis::~CacheWasteAnalysis() {
+	delete cache;
+}
 
-class CacheLine {
+void CacheWasteAnalysis::verboseOutput(string line) {
+	cout << line << endl;
+	cout << "Parsed: " << endl;
+	cout << hex << "0x" << address << dec << endl;
+	cout << accessSize << endl;
+	cout << accessSite << endl;
+	cout << varInfo << endl;
+}
 
-private:
-    int lineSize;     /* In bytes */
-public:
-    size_t address;    /* virtual address responsible for populating this cache line */
-    size_t tag; 
-    string accessSite; /* which code location caused that data to be brought 
-			* into the cache line? */
-    unsigned short initAccessSize; /* The size of the access that brought 
-				      this line into cache */
-    string varInfo;    /* the name and the type of the corresponding variable,
-			* if we know it. */
-    bitset<MAX_LINE_SIZE> *bytesUsed; /* This is a bitmap. There is a bit for each byte in the
-			* cache line. If a byte sitting in the cache line is
-			* accessed by the user program, we mark it as "accessed"
-			* by setting the corresponding bit to "1".
-			*/
-    size_t timeStamp;  /* Virtual time of access */
-    unsigned short timesReusedBeforeEvicted;
-
-    CacheLine() {
-    	/* this is ugly, but C++ doesn't
-    	 * allow to allocate an array and
-    	 * initialize all members with the
-    	 * same constructor at the same time.
-    	*/
-
-    	/* Size is given in bytes */
-	    lineSize = CACHE_LINE_SIZE;
-	    address = 0;
-	    tag = 0;
-	    initAccessSize = 0;
-	    accessSite = "";
-	    varInfo = "";
-	    timesReusedBeforeEvicted = 0;
-	    timeStamp = 0;
-	    bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize); 
-	    bytesUsed->reset();
-	}
-
-    /* Print info about the access that caused this line to be 
-     * brought into the cache */
-    void printFaultingAccessInfo() {
-	    cout<< "0x" << hex << address << dec << " " << initAccessSize << " "
-		<< accessSite << varInfo << endl;
-	}
-
-    void setAndAccess(size_t address, unsigned short accessSize, 
-		      string accessSite, string varInfo, size_t timeStamp) {
-	    this->address = address;
-	    this->initAccessSize = accessSize;
-	    tag = address >> tagMaskBits;
-	    this->accessSite = accessSite;
-	    this->varInfo = varInfo;
-	    timesReusedBeforeEvicted = 0;
-	    bytesUsed->reset();
-
-	    access(address, accessSize, timeStamp);
-	}
-
-    bool valid(size_t address) {
-	    if(address >> tagMaskBits == tag)
-	    	return true;
-	    
-	    return false;
-	}
-
-    /* Set to '1' the bits corresponding to this address
-     * within the cache line, to mark the corresponding bytes
-     * as "accessed".
-     * If those bits are already marked as accessed, we increment
-     * the reuse counter.
-     */
-    void access(size_t address, unsigned short accessSize, size_t timeStamp) {
-	    int lineOffset = address % lineSize;
-	    
-	    assert(valid(address));
-	    assert(lineOffset + accessSize <= lineSize);
-	    
-	    this->timeStamp = timeStamp;
-
-	    /* We only check if the first bit is set, assuming that if
-	     * we access the same valid address twice, the data represents
-	     * the same variable (and thus the same access size) as before
-	     */
-	    if(bytesUsed->test(lineOffset)) {
-	    	timesReusedBeforeEvicted++;
-	    } else {
-	    	for(int i = lineOffset; i < min(lineOffset + accessSize, lineSize); i++) {
-	    		bytesUsed->set(i);
-	    	}
-	    }
-	}    
-    
-    void evict() {
-
-	    /* We are being evicted. Print our stats, update waste maps and clear. */
-	    if(WANT_RAW_OUTPUT) {
-	    	cout << bytesUsed->count() << "\t" << timesReusedBeforeEvicted
-	    			<< "\t" << accessSite << "[" << varInfo << "]\t"
-					<< "0x" << hex << address << dec << endl;
-	    }
-
-	    if(timesReusedBeforeEvicted == 0) {
-	    	zeroReuseMap.insert(pair<string, ZeroReuseRecord>
-	    					    (accessSite,
-	    					     ZeroReuseRecord(varInfo, address)));
-	    }
-
-	    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-			lowUtilMap.insert(pair<string, LowUtilRecord>
-					  (accessSite,
-					   LowUtilRecord(varInfo, address, bytesUsed->count())));
-	    }
-
-	    address = 0;
-	    tag = 0;
-	    accessSite = "";
-	    varInfo = "";
-	    timesReusedBeforeEvicted = 0;
-	    bytesUsed->reset();
-	}
-
-    void printParams() {
-	    cout << "Line size = " << lineSize << endl;
-	}
-};
-
-
-class CacheSet
-{
-public:
-    int assoc, lineSize;
-    CacheLine *lines;
-    size_t curTime; /* a virtual time ticks every time someone
-		     * accesses this cache set. */
-public:
-    CacheSet()
-	{
-	    assoc = ASSOC;
-	    lineSize = CACHE_LINE_SIZE;
-	    curTime = 0;
-	    this->assoc = assoc;
-	    lines = new CacheLine[assoc];
-	    
-	}
-
-    /* Find a cache line to evict or return a clean time 
-     * For evictions we use the true LRU policy based on 
-     * virtual timestamps. 
-     */
-    CacheLine * findCleanOrVictim(size_t timeNow)
-	{
-	    size_t minTime = curTime, minIndex = -1;
-#if VERBOSE
-	    cout << "Looking for eviction candidate at time " << timeNow << endl;
-#endif
-
-	    /* A clean line will have a timestamp of zero, 
-	     * so it will automatically get selected. 
-	     */
-	    for(int i = 0; i < assoc; i++)
-	    {
-		if(lines[i].timeStamp < minTime)
-		{
-		    minTime = lines[i].timeStamp;
-		    minIndex = i;
-		}
-#if VERBOSE
-		cout << "block "<< i << " ts is " << lines[i].timeStamp << endl;
-#endif
-	    }
-	    assert(minIndex >= 0);
-
-#if VERBOSE
-	    cout << "Eviction candidate is block " << minIndex << endl;
-#endif
-	    /* Evict the line if it's not empty */
-	    if(lines[minIndex].timeStamp != 0)
-		lines[minIndex].evict();
-
-	    return &(lines[minIndex]);
-	}
-
-    /* See if any of the existing cache lines hold
-     * that address. If so, access the cache line. 
-     * Otherwise, find someone to evict and populate
-     * the cache line with the new data
-     */
-    void access(size_t address, unsigned short accessSize, 
-		string accessSite, string varInfo)
-	{
-	    curTime++;
-
-	    for(int i = 0; i < assoc; i++)
-	    {
-		if(lines[i].valid(address))
-		{
-		    lines[i].access(address, accessSize, curTime);
-		    return;
-		}
-	    }
-	    
-	    /* If we are here, we did not find the data in cache.
-	     * See if there is an empty cache line or find someone to evict. 
-	     */
-	    CacheLine *line = findCleanOrVictim(curTime);
-	    line->setAndAccess(address, accessSize, accessSite, varInfo, curTime);
-	}
-
-    void printParams()
-	{
-	    cout << "Associativity = " << assoc << endl;
-	    cout << "Line size = " << lineSize << endl;
-	}
-};
-
-class Cache
-{
-public:
-    int numSets;
-    int assoc;
-    int lineSize;
-    CacheSet *sets;
-
-
-    Cache(int numSets, int assoc, int lineSize)
-	{
-	    this->numSets = numSets;
-	    this->assoc = assoc;
-	    this->lineSize = lineSize;
-	    sets = new CacheSet[numSets];
-
-	    /* This is by how many bits we have to shift the
-	     * address to compute the tag. */
-	    tagMaskBits = log2(lineSize) + log2(numSets);
-	}
-
-    void access(size_t address, unsigned short accessSize, 
-		string accessSite, string varInfo)
-	{
-	    /* See if the access spans two cache lines.
-	     */
-	    int lineOffset = address % lineSize;
-	    
-	    if(lineOffset + accessSize <= lineSize)
-	    {
-		__access(address, accessSize, accessSite, varInfo);
-		return;
-	    }
-
-	    /* If we are here, we have a spanning access.
-	     * Determine the address of the first byte that 
-	     * spills into another cache line. 
-	     */
-	    uint16_t bytesFittingIntoFirstLine = lineSize - lineOffset;
-	    size_t addressOfFirstByteNotFitting = 
-		address + bytesFittingIntoFirstLine;
-	    uint16_t sizeOfSpillingAccess = accessSize - bytesFittingIntoFirstLine;
-#if VERBOSE
-	    cerr << "SPANNING ACCESS: 0x" << hex << address 
-		 << dec << " " << accessSize << " " << accessSite 
-		 << " " << varInfo << endl;
-	    cerr << "Split into: " << endl;
-	    cerr << "\t0x" << hex << address << dec << " " 
-		 << bytesFittingIntoFirstLine << endl;
-	    cerr << "\t0x" << hex << addressOfFirstByteNotFitting << dec << " " 
-		 << sizeOfSpillingAccess << endl;
-#endif
-
-
-	    /* Split them into two accesses */
-	    __access(address, bytesFittingIntoFirstLine, accessSite, varInfo);
-
-	    /* We recursively call this function in case the spilling access 
-	     * spans more than two lines. */
-	    access(addressOfFirstByteNotFitting, sizeOfSpillingAccess, 
-		   accessSite, varInfo);
-	    
-	}
-
-    void printParams()
-	{
-	    cout << "Line size      = " << lineSize << endl;
-	    cout << "Number of sets = " << numSets << endl;
-	    cout << "Associativity  = " << assoc << endl;
-	}
-
-private:
-    /* Here we assume that accesses would not be spanning cache
-     * lines. The calling function should have taken care of this.
-     */
-    void __access(size_t address, unsigned short accessSize, 
-		string accessSite, string varInfo)
-	{
-	    /* Locate the set that we have to access */
-	    int setNum = (address >> (int)log2(lineSize)) % numSets;
-	    
-	    assert(setNum < numSets);
-#if VERBOSE
-	    cout << hex << address << dec << " maps into set #" << setNum << endl;
-#endif
-	    sets[setNum].access(address, accessSize, accessSite, varInfo);
-	    
-	}
-
-};
-/***************************************************************************
- * END CACHE SIMULATION CODE
-/****************************************************************************/
-
-void parseAndSimulate(string line, Cache *c)
-{
+void CacheWasteAnalysis::parseAndSimulate(string line) {
     istringstream str(line);
-    string word;
-    size_t address;
-    unsigned short accessSize;
-    string accessSite;
-    string varInfo;
 
     /* Let's determine if this is an access record */
-    if(!str.eof())
-    {
-	str >> word;
-	if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0))
-	    return;
+    if(!str.eof()) {
+		str >> word;
+		if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0))
+			return;
     }
 
     /* We are assuming the memtracker trace output, the text 
@@ -417,54 +93,45 @@ void parseAndSimulate(string line, Cache *c)
      * <access_type> <tid> <addr> <size> <func> <access_source> <alloc_source> <name> <type>
      */
     int iter = 1;
-    while(!str.eof())
-    {
-	str >> word;
+    while(!str.eof()) {
+		str >> word;
 
-	switch(iter++)
-	{
-	case 1:	    // Skip the tid
-	    break;
-	case 2:     // Parse the address
-	    address = strtol(word.c_str(), 0, 16);
-	    if(errno == EINVAL || errno == ERANGE)
-	    {
-		cerr << "The following line caused error when parsing address: " << endl;
-		cerr << line << endl;
-		exit(-1);
-	    }
-	    break;
-	case 3:     // Parse the size
-	    accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
-	    if(errno == EINVAL || errno == ERANGE)
-	    {
-		cerr << "The following line caused error when parsing access size: " << endl;
-		cerr << line << endl;
-		exit(-1);
-	    }
-	    break;
-	case 4: 
-	case 5: 
-	    accessSite += word + " ";
-	    break;
-	case 6: 
-	case 7: 
-	case 8:
-	    varInfo += word + " ";
-	    break;
-	}
+		switch(iter++) {
+			case 1:	    // Skip the tid
+				break;
+			case 2:     // Parse the address
+				address = strtol(word.c_str(), 0, 16);
+				if(errno == EINVAL || errno == ERANGE) {
+					cerr << "The following line caused error when parsing address: " << endl;
+					cerr << line << endl;
+					exit(-1);
+				}
+				break;
+			case 3:     // Parse the size
+				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
+				if(errno == EINVAL || errno == ERANGE) {
+					cerr << "The following line caused error when parsing access size: " << endl;
+					cerr << line << endl;
+					exit(-1);
+				}
+				break;
+			case 4:
+			case 5:
+				accessSite += word + " ";
+				break;
+			case 6:
+			case 7:
+			case 8:
+				varInfo += word + " ";
+				break;
+		}
     }
 
-#if VERBOSE
-    cout << line << endl;
-    cout << "Parsed: " << endl;
-    cout << hex << "0x" << address << dec << endl;
-    cout << accessSize << endl;
-    cout << accessSite << endl;
-    cout << varInfo << endl;
-#endif
+    if(VERBOSE) {
+		return verboseOutput(line);
+    }
 
-    c->access(address, accessSize, accessSite, varInfo);
+	cache->access(address, accessSize, accessSite, varInfo);
 
 }
 
@@ -481,31 +148,27 @@ void parseAndSimulate(string line, Cache *c)
 
 template <class T>
 void summarizeMap(unordered_multimap<string, T> &ungroupedMap,
-		       multimap<int, tuple<string, vector<T>>> &groupedMap)
-{
+		       multimap<int, tuple<string, vector<T>>> &groupedMap) {
 
     /* Iterate the map. Once we encounter a new source line,
      * count the number of its associated waste records, 
      * put that in the summarized map, where the count is the key, 
      * and the value is the list (vector) of associated waste records.
      */
-    for(auto it = ungroupedMap.begin(); it != ungroupedMap.end(); it++) 
-    {
+    for(auto it = ungroupedMap.begin(); it != ungroupedMap.end(); it++) {
+		vector<T> curVector;
+		string curAccessSite = it->first;
 
-	vector<T> curVector;	
-	string curAccessSite = it->first;
+		do {
+			curVector.push_back(it->second);
+			++it;
+		} while (it != ungroupedMap.end() && curAccessSite.compare(it->first)==0);
 
-	do 
-	{
-	    curVector.push_back(it->second);
-	    ++it;
-	} while (it != ungroupedMap.end() && curAccessSite.compare(it->first)==0);
+		tuple<string, vector<T>> gRecs = make_tuple(curAccessSite, curVector);
+		groupedMap.insert(make_pair(curVector.size(), gRecs));
 	
-	tuple<string, vector<T>> gRecs = make_tuple(curAccessSite, curVector); 
-	groupedMap.insert(make_pair(curVector.size(), gRecs));	
-
-	if(it == ungroupedMap.end())
-	  break;
+		if(it == ungroupedMap.end())
+		  break;
     }
 }
 
@@ -531,134 +194,7 @@ void printSummarizedMap(multimap<int, tuple<string, vector<T>>> & groupedMap)
  * END DATA ANALYSIS CODE
 /****************************************************************************/
 
-int main(int argc, char *argv[])
-{
-    char *fname = NULL;
-    char *nptr;
-    char c;
-    ifstream traceFile;
 
-    
-    /* Right now we don't check that the number of sets
-     * and the cache line size are a power of two, but
-     * we probably should. 
-     */
-    while ((c = getopt (argc, argv, "a:f:l:s:r")) != -1)
-	switch(c)
-	{
-	case 'a': /* Associativity */
-	    ASSOC = (int)strtol(optarg, &nptr, 10);
-	    if(nptr == optarg && ASSOC == 0)
-	    {
-		cerr << "Invalid argument for associativity: " 
-		     << optarg << endl;
-		exit(-1);
-	    }
-	    else
-		cout << "Associativity set to "<< ASSOC << endl;
-	    break;
-	case 'f':
-	    fname = optarg;
-	    break;
-	case 'l':
-	    CACHE_LINE_SIZE = strtol(optarg, &nptr, 10);
-	    if(nptr == optarg && CACHE_LINE_SIZE == 0)
-	    {
-		cerr << "Invalid argument for the cache line size: " 
-		     << optarg << endl;
-		exit(-1);
-	    }
-	    else
-		cout << "Associativity set to "<< CACHE_LINE_SIZE << endl;
-	    break;
-	case 'r':
-	    WANT_RAW_OUTPUT = true;
-	    break;
-	case 's': /* Number of cache sets */
-    	    NUM_SETS = (int)strtol(optarg, &nptr, 10);
-	    if(nptr == optarg && NUM_SETS == 0)
-	    {
-		cerr << "Invalid argument for the number of cache sets: " 
-		     << optarg << endl;
-		exit(-1);
-	    }
-	    else
-		cout << "Number of cache sets set to "<< NUM_SETS << endl;
-	    break;
-	case '?':
-	default:
-	    cerr << "Unknown option or missing option argument." << endl;
-	    exit(-1);
-	}
-
-
-    if(fname == NULL)
-    {
-	cerr << "Please provide input trace file with the -f option." << endl;
-	exit(-1);
-    }
-
-    Cache *cache = new Cache(NUM_SETS, ASSOC, CACHE_LINE_SIZE);
-    cache->printParams();
- 
-    /* Let's open the trace file */
-    traceFile.open(fname);
-    if(!traceFile.is_open())
-    {
-	cerr << "Failed to open file " << fname << endl;
-	exit(-1);
-    }
-
-    string line;
-
-    /* Read the input line by line */
-    while(!traceFile.eof())
-    {
-	getline(traceFile, line);
-	parseAndSimulate(line, cache);
-    }
-    
-    /* Print the waste maps */
-    cout << "*************************************************" << endl;
-    cout << "               ZERO REUSE MAP                    " << endl;
-    cout << "*************************************************" << endl;
-
-    for(auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++)
-    {
-        cout << it->first << endl;
-        cout << (ZeroReuseRecord&) it->second << endl;
-
-    }
-
-    cout << endl;
-
-    /* Print the waste maps */
-    cout << "*************************************************" << endl;
-    cout << "               LOW UTILIZATION MAP               " << endl;
-    cout << "*************************************************" << endl;
-
-    for(auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++)
-    {
-        cout << it->first << endl;
-        cout << it->second << endl;
-
-    }
-
-    //summarizeZeroReuseMap();
-    summarizeMap<ZeroReuseRecord>(zeroReuseMap, groupedZeroReuseMap);
-    cout << "*************************************************" << endl;
-    cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
-    cout << "*************************************************" << endl;
-    printSummarizedMap<ZeroReuseRecord>(groupedZeroReuseMap);
-
-    summarizeMap<LowUtilRecord>(lowUtilMap, groupedLowUtilMap);
-    cout << endl;
-    cout << "*************************************************" << endl;
-    cout << "         LOW UTILIZATION MAP SUMMARIZED          " << endl;
-    cout << "*************************************************" << endl;
-    printSummarizedMap<LowUtilRecord>(groupedLowUtilMap);
-
-}
 
 
 

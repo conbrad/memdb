@@ -15,8 +15,8 @@ class Cache {
 private:
 	void __access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
 
-	// TODO make private for safety
 public:
+	// TODO make private for safety
     int numSets;
     int assoc;
     int lineSize;

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <assert.h>
 
+#include "../main.h"
+
 using namespace std;
 
 CacheLine::CacheLine() {

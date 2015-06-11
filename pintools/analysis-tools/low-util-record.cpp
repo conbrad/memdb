@@ -1,6 +1,6 @@
 #include "low-util-record.h"
 #include <iostream>
-#include "cache-waste-analysis.h"
+#include "main.h"
 
 using namespace std;
 
@@ -16,3 +16,5 @@ std::ostream& operator<< (std::ostream& stream, const LowUtilRecord& lowReuseRec
 	cout << "\t0x" << hex << lowReuseRecord.mAddress << dec << endl;
 	cout << "\t" << lowReuseRecord.mByteUseCount << "/" << CACHE_LINE_SIZE << endl;
 }
+
+LowUtilRecord::~LowUtilRecord(){}

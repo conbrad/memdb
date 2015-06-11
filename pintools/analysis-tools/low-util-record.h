@@ -17,6 +17,7 @@ private:
 
 public:
 	LowUtilRecord(std::string varInfo, std::size_t address, int byteUsedCount);
+	~LowUtilRecord();
 	friend std::ostream& operator<< (std::ostream& stream, const LowUtilRecord& lowReuseRecord);
 };
 

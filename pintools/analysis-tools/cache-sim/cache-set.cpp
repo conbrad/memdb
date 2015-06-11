@@ -1,7 +1,7 @@
 #include "cache-set.h"
 #include <assert.h>
 #include <iostream>
-#include "../cache-waste-analysis.h"
+#include "../main.h"
 
 using namespace std;
 

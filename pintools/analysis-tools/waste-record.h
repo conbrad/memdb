@@ -19,7 +19,7 @@ protected:
 public:
 	WasteRecord();
 	WasteRecord(std::string varInfo, std::size_t address);
-
+	virtual ~WasteRecord();
 };
 
 
