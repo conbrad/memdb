@@ -33,9 +33,9 @@
 /* The following data structures are used to summarize
  * the cache waste per source location.
  */
-#include "waste-record.h"
-#include "low-util-record.h"
-#include "zero-reuse-record.h"
+#include "record/waste-record.h"
+#include "record/low-util-record.h"
+#include "record/zero-reuse-record.h"
 
 /* These data structures relate to cache simulation.
  * For each line in the cache, we keep track of the address,

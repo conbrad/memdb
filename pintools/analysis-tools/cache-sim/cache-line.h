@@ -11,8 +11,8 @@
 #include <string>
 #include <bitset>
 #include <unordered_map>
-#include "../zero-reuse-record.h"
-#include "../low-util-record.h"
+#include "../record/zero-reuse-record.h"
+#include "../record/low-util-record.h"
 #include "../main.h"
 
 class CacheLine {
