@@ -9,7 +9,12 @@
 #define CACHE_SET_H_
 
 #include <string>
+#include <map>
+#include <tuple>
+#include <vector>
+
 #include "cache-line.h"
+#include "../record/zero-reuse-record.h"
 
 class CacheSet {
 public:
@@ -24,6 +29,7 @@ public:
     CacheLine* findCleanOrVictim(size_t timeNow);
     void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
     void printParams();
+    void zeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
 };
 
 #endif /* CACHE_SET_H_ */

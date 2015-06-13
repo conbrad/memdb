@@ -2,10 +2,12 @@ include ../Makefile.inc
 
 RECORD_DIR = record
 CACHE_DIR = cache-sim
+UTIL_DIR = util
 
-SOURCES = $(RECORD_SOURCES) $(CACHE_SOURCES) cache-waste-analysis.cpp main.cpp
+SOURCES = $(RECORD_SOURCES) $(UTIL_SOURCES) $(CACHE_SOURCES) cache-waste-analysis.cpp main.cpp
 RECORD_SOURCES = $(RECORD_DIR)/waste-record.cpp $(RECORD_DIR)/zero-reuse-record.cpp $(RECORD_DIR)/low-util-record.cpp
 CACHE_SOURCES = $(CACHE_DIR)/cache-line.cpp $(CACHE_DIR)/cache-set.cpp $(CACHE_DIR)/cache.cpp
+UTIL_SOURCES = $(UTIL_DIR)/map-summarizer.h
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 

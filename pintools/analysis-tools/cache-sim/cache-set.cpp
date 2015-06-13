@@ -72,6 +72,12 @@ void CacheSet::access(size_t address, unsigned short accessSize, std::string acc
     line->setAndAccess(address, accessSize, accessSite, varInfo, curTime);
 }
 
+void CacheSet::zeroReuseSummary(multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap) {
+	for(int i = 0; i < assoc; i++) {
+		lines[i].printZeroReuseSummary(groupedZeroReuseMap);
+	}
+}
+
 void CacheSet::printParams() {
     cout << "Associativity = " << assoc << endl;
     cout << "Line size = " << lineSize << endl;

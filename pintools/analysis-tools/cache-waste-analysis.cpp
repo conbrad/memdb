@@ -51,11 +51,27 @@
 
 using namespace std;
 
-unordered_multimap <string, ZeroReuseRecord> zeroReuseMap;
-unordered_multimap <string, LowUtilRecord> lowUtilMap;
+//unordered_multimap <string, ZeroReuseRecord> zeroReuseMap;
+//unordered_multimap <string, LowUtilRecord> lowUtilMap;
 
 multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap;
 multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
+
+
+/* We are assuming the memtracker trace output, the text
+ * version. It has the following format:
+ *
+ * <access_type> <tid> <addr> <size> <func>
+ * <access_source> <alloc_source> <name> <type>
+ */
+const int TID = 1;
+const int ADDRESS = 2;
+const int SIZE = 3;
+const int FUNCTION = 4;
+const int ACCESS_SOURCE = 5;
+const int ALLOC_SOURCE = 6;
+const int NAME = 7;
+const int TYPE = 8;
 
 CacheWasteAnalysis::CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize) {
 	word = accessSite = varInfo = "";
@@ -69,60 +85,35 @@ CacheWasteAnalysis::~CacheWasteAnalysis() {
 	delete cache;
 }
 
-void CacheWasteAnalysis::verboseOutput(string line) {
-	cout << line << endl;
-	cout << "Parsed: " << endl;
-	cout << hex << "0x" << address << dec << endl;
-	cout << accessSize << endl;
-	cout << accessSite << endl;
-	cout << varInfo << endl;
-}
-
 void CacheWasteAnalysis::parseAndSimulate(string line) {
     istringstream str(line);
 
-    /* Let's determine if this is an access record */
-    if(!str.eof()) {
-		str >> word;
-		if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0))
-			return;
+    if(!accessRecord(str)) {
+    	return;
     }
 
-    /* We are assuming the memtracker trace output, the text 
-     * version. It has the following format:
-     * <access_type> <tid> <addr> <size> <func> <access_source> <alloc_source> <name> <type>
-     */
-    int iter = 1;
+    int lineColumn = TID;
     while(!str.eof()) {
 		str >> word;
 
-		switch(iter++) {
-			case 1:	    // Skip the tid
+		switch(lineColumn++) {
+			case TID:	    	// Skip the tid
 				break;
-			case 2:     // Parse the address
-				address = strtol(word.c_str(), 0, 16);
-				if(errno == EINVAL || errno == ERANGE) {
-					cerr << "The following line caused error when parsing address: " << endl;
-					cerr << line << endl;
-					exit(-1);
-				}
+			case ADDRESS:		parseAddress(line);
 				break;
-			case 3:     // Parse the size
-				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
-				if(errno == EINVAL || errno == ERANGE) {
-					cerr << "The following line caused error when parsing access size: " << endl;
-					cerr << line << endl;
-					exit(-1);
-				}
+			case SIZE:			parseSize(line);
 				break;
-			case 4:
-			case 5:
-				accessSite += word + " ";
+			case FUNCTION:		parseAccessSite();
 				break;
-			case 6:
-			case 7:
-			case 8:
-				varInfo += word + " ";
+			case ACCESS_SOURCE: parseAccessSite();
+				break;
+			case ALLOC_SOURCE:	parseVarInfo();
+				break;
+			case NAME:			parseVarInfo();
+				break;
+			case TYPE:			parseVarInfo();
+				break;
+			default:			inputError();
 				break;
 		}
     }
@@ -132,7 +123,63 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
     }
 
 	cache->access(address, accessSize, accessSite, varInfo);
+}
 
+void CacheWasteAnalysis::parseAccessSite() {
+	accessSite += word + " ";
+}
+
+void CacheWasteAnalysis::parseVarInfo() {
+	varInfo += word + " ";
+}
+
+void CacheWasteAnalysis::inputError() {
+	cout << "Error parsing input: " << word << endl;
+}
+
+void CacheWasteAnalysis::verboseOutput(const string& line) {
+	cout << line << endl;
+	cout << "Parsed: " << endl;
+	cout << hex << "0x" << address << dec << endl;
+	cout << accessSize << endl;
+	cout << accessSite << endl;
+	cout << varInfo << endl;
+}
+
+void CacheWasteAnalysis::parseSize(const string& line) {
+	accessSize = (unsigned short) (strtol(word.c_str(), 0, 10));
+	if (errno == EINVAL || errno == ERANGE) {
+		cerr << "The following line caused error when parsing access size: "
+				<< endl;
+		cerr << line << endl;
+		exit(-1);
+	}
+}
+
+void CacheWasteAnalysis::parseAddress(const string& line) {
+	address = strtol(word.c_str(), 0, 16);
+	if (errno == EINVAL || errno == ERANGE) {
+		cerr << "The following line caused error when parsing address: "
+				<< endl;
+		cerr << line << endl;
+		exit(-1);
+	}
+}
+
+bool CacheWasteAnalysis::accessRecord(istringstream& str) {
+    if(str.eof()) {
+    	return false;
+    }
+
+    str >> word;
+	if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0)) {
+		return false;
+	}
+	return true;
+}
+
+void CacheWasteAnalysis::zeroReuseSummary() {
+	cache->sets->zeroReuseSummary(groupedZeroReuseMap);
 }
 
 /***************************************************************************

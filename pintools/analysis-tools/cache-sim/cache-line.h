@@ -11,6 +11,9 @@
 #include <string>
 #include <bitset>
 #include <unordered_map>
+#include <map>
+#include <tuple>
+#include <vector>
 #include "../record/zero-reuse-record.h"
 #include "../record/low-util-record.h"
 #include "../main.h"
@@ -22,10 +25,9 @@ private:
     int lineSize;
     int tagMaskBits;
 
-    std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
-    std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
+	void resetLine();
+
 public:
-    const float LOW_UTIL_THRESHOLD = 0.5;
     // TODO make fields private for safety
     /* virtual address responsible for populating this cache line */
     std::size_t address;
@@ -58,6 +60,8 @@ public:
     void access(size_t address, unsigned short accessSize, size_t timeStamp);
     void evict();
     void printParams();
+    void printZeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
+    void printLowUtilSummary(std::multimap <int, std::tuple<std::string, std::vector<LowUtilRecord>>> groupedLowUtilMap);
 };
 
 #endif /* CACHE_LINE_H_ */

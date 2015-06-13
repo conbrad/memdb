@@ -15,16 +15,24 @@ const int VERBOSE = 0;
 class CacheWasteAnalysis {
 private:
     std::string word;
-    size_t address;
-    unsigned short accessSize;
     std::string accessSite;
     std::string varInfo;
     Cache *cache;
-	void verboseOutput(std::string line);
+    size_t address;
+    unsigned short accessSize;
+	bool accessRecord(std::istringstream& str);
+	void verboseOutput(const std::string& line);
+	void parseSize(const std::string& line);
+	void parseAddress(const std::string& line);
+	void parseAccessSite();
+	void parseVarInfo();
+	void inputError();
+
 public:
 	CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize);
 	~CacheWasteAnalysis();
 	void parseAndSimulate(std::string line);
+	void zeroReuseSummary();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

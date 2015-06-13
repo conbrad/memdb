@@ -124,6 +124,8 @@ void analyzeTrace(char* fileName) {
 	}
 	traceFile.close();
 
+	cacheAnalyzer->zeroReuseSummary();
+
 	delete cacheAnalyzer;
 }
 

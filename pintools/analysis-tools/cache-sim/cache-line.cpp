@@ -4,9 +4,13 @@
 #include <assert.h>
 
 #include "../main.h"
+#include "../util/map-summarizer.h"
 
 using namespace std;
 
+const float LOW_UTIL_THRESHOLD = 0.5;
+std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
+std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
 CacheLine::CacheLine() {
     	/* this is ugly, but C++ doesn't
     	 * allow to allocate an array and
@@ -18,6 +22,7 @@ CacheLine::CacheLine() {
 	    lineSize = CACHE_LINE_SIZE;
 	    address = 0;
 	    tag = 0;
+	    tagMaskBits = 0;
 	    initAccessSize = 0;
 	    accessSite = "";
 	    varInfo = "";
@@ -25,6 +30,7 @@ CacheLine::CacheLine() {
 	    timeStamp = 0;
 	    bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize);
 	    bytesUsed->reset();
+
 }
 
 /* Print info about the access that caused this line to be
@@ -80,6 +86,15 @@ void CacheLine::access(size_t address, unsigned short accessSize, size_t timeSta
     }
 }
 
+void CacheLine::resetLine() {
+	address = 0;
+	tag = 0;
+	accessSite = "";
+	varInfo = "";
+	timesReusedBeforeEvicted = 0;
+	bytesUsed->reset();
+}
+
 void CacheLine::evict() {
 
     /* We are being evicted. Print our stats, update waste maps and clear. */
@@ -100,13 +115,12 @@ void CacheLine::evict() {
 				  (accessSite,
 				   LowUtilRecord(varInfo, address, bytesUsed->count())));
     }
+	resetLine();
+}
 
-    address = 0;
-    tag = 0;
-    accessSite = "";
-    varInfo = "";
-    timesReusedBeforeEvicted = 0;
-    bytesUsed->reset();
+void CacheLine::printZeroReuseSummary(multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap) {
+	MapSummarizer::summarizeMap(zeroReuseMap, groupedZeroReuseMap);
+	//MapSummarizer::printSummarizedMap(groupedZeroReuseMap);
 }
 
 void CacheLine::printParams() {
