@@ -15,5 +15,14 @@ extern int CACHE_LINE_SIZE;
 extern int ASSOC;
 extern bool WANT_RAW_OUTPUT;
 
+#include "record/zero-reuse-record.h"
+#include "record/low-util-record.h"
+
+class Main {
+public:
+	static void addZeroReuseRecord(std::pair<std::string, ZeroReuseRecord> entry);
+	static void addLowUtilRecord(std::pair<std::string, LowUtilRecord> entry);
+};
+
 
 #endif /* MAIN_H_ */

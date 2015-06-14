@@ -15,21 +15,28 @@
 
 #include "cache-line.h"
 #include "../record/zero-reuse-record.h"
+#include "../record/low-util-record.h"
 
 class CacheSet {
+private:
+	int associativity;
+	int cacheLineSize;
+
 public:
-    int assoc, lineSize;
-    CacheLine *lines;
+    CacheLine *cacheLines;
 
     /* a virtual time ticks every time someone
      * accesses this cache set. */
-    size_t curTime;
+    size_t currentTime;
 
     CacheSet();
+    void printParams();
     CacheLine* findCleanOrVictim(size_t timeNow);
     void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
-    void printParams();
+    void printZeroReuseDetail();
     void zeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
+    void printLowUtilDetail();
+    void lowUtilSummary(std::multimap <int, std::tuple<std::string, std::vector<LowUtilRecord>>> groupedLowUtilMap);
 };
 
 #endif /* CACHE_SET_H_ */

@@ -51,9 +51,6 @@
 
 using namespace std;
 
-//unordered_multimap <string, ZeroReuseRecord> zeroReuseMap;
-//unordered_multimap <string, LowUtilRecord> lowUtilMap;
-
 multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap;
 multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
 
@@ -87,8 +84,19 @@ CacheWasteAnalysis::~CacheWasteAnalysis() {
 
 void CacheWasteAnalysis::parseAndSimulate(string line) {
     istringstream str(line);
+    string word;
+    size_t address;
+    unsigned short accessSize;
+    string accessSite;
+    string varInfo;
 
-    if(!accessRecord(str)) {
+    /* Let's determine if this is an access record */
+    if(str.eof()) {
+    	return;
+    }
+
+    str >> word;
+    if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0)) {
     	return;
     }
 
@@ -97,40 +105,42 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
 		str >> word;
 
 		switch(lineColumn++) {
-			case TID:	    	// Skip the tid
+			case TID:	    // Skip the tid
 				break;
-			case ADDRESS:		parseAddress(line);
+			case ADDRESS:     // Parse the address
+				address = strtol(word.c_str(), 0, 16);
+				if(errno == EINVAL || errno == ERANGE) {
+					cerr << "The following line caused error when parsing address: " << endl;
+					cerr << line << endl;
+					exit(-1);
+				}
 				break;
-			case SIZE:			parseSize(line);
+			case SIZE:     // Parse the size
+				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
+				if(errno == EINVAL || errno == ERANGE) {
+					cerr << "The following line caused error when parsing access size: " << endl;
+					cerr << line << endl;
+					exit(-1);
+				}
 				break;
-			case FUNCTION:		parseAccessSite();
+			case FUNCTION:
+			case ACCESS_SOURCE:
+				accessSite += word + " ";
 				break;
-			case ACCESS_SOURCE: parseAccessSite();
-				break;
-			case ALLOC_SOURCE:	parseVarInfo();
-				break;
-			case NAME:			parseVarInfo();
-				break;
-			case TYPE:			parseVarInfo();
-				break;
-			default:			inputError();
+			case ALLOC_SOURCE:
+			case NAME:
+			case TYPE:
+				varInfo += word + " ";
 				break;
 		}
     }
 
     if(VERBOSE) {
-		return verboseOutput(line);
+    	verboseOutput(line);
     }
 
-	cache->access(address, accessSize, accessSite, varInfo);
-}
+    cache->access(address, accessSize, accessSite, varInfo);
 
-void CacheWasteAnalysis::parseAccessSite() {
-	accessSite += word + " ";
-}
-
-void CacheWasteAnalysis::parseVarInfo() {
-	varInfo += word + " ";
 }
 
 void CacheWasteAnalysis::inputError() {
@@ -146,26 +156,6 @@ void CacheWasteAnalysis::verboseOutput(const string& line) {
 	cout << varInfo << endl;
 }
 
-void CacheWasteAnalysis::parseSize(const string& line) {
-	accessSize = (unsigned short) (strtol(word.c_str(), 0, 10));
-	if (errno == EINVAL || errno == ERANGE) {
-		cerr << "The following line caused error when parsing access size: "
-				<< endl;
-		cerr << line << endl;
-		exit(-1);
-	}
-}
-
-void CacheWasteAnalysis::parseAddress(const string& line) {
-	address = strtol(word.c_str(), 0, 16);
-	if (errno == EINVAL || errno == ERANGE) {
-		cerr << "The following line caused error when parsing address: "
-				<< endl;
-		cerr << line << endl;
-		exit(-1);
-	}
-}
-
 bool CacheWasteAnalysis::accessRecord(istringstream& str) {
     if(str.eof()) {
     	return false;
@@ -178,9 +168,6 @@ bool CacheWasteAnalysis::accessRecord(istringstream& str) {
 	return true;
 }
 
-void CacheWasteAnalysis::zeroReuseSummary() {
-	cache->sets->zeroReuseSummary(groupedZeroReuseMap);
-}
 
 /***************************************************************************
  * BEGIN DATA ANALYSIS CODE

@@ -4,6 +4,8 @@
 #include "main.h"
 
 #include "cache-waste-analysis.h"
+#include "util/map-summarizer.h"
+#include "main.h"
 
 using namespace std;
 
@@ -30,33 +32,25 @@ void userAssociativityMessage(char* nptr);
 void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
 
+void printWasteMaps();
+
+std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
+std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
+
+void Main::addZeroReuseRecord(pair<string, ZeroReuseRecord> entry) {
+	zeroReuseMap.insert(entry);
+}
+
+void Main::addLowUtilRecord(pair<string, LowUtilRecord> entry) {
+	lowUtilMap.insert(entry);
+}
+
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
 
 	fileName = parseInputOptions(argc, argv, fileName);
 	analyzeTrace(fileName);
-//    /* Print the waste maps */
-//    cout << "*************************************************" << endl;
-//    cout << "               ZERO REUSE MAP                    " << endl;
-//    cout << "*************************************************" << endl;
-//
-//    for(auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) {
-//        cout << it->first << endl;
-//        cout << (ZeroReuseRecord&) it->second << endl;
-//    }
-//
-//    cout << endl;
-//
-//    /* Print the waste maps */
-//    cout << "*************************************************" << endl;
-//    cout << "               LOW UTILIZATION MAP               " << endl;
-//    cout << "*************************************************" << endl;
-//
-//    for(auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++) {
-//        cout << it->first << endl;
-//        cout << it->second << endl;
-//    }
-//
+	printWasteMaps();
 //    summarizeMap<ZeroReuseRecord>(zeroReuseMap, groupedZeroReuseMap);
 //    cout << "*************************************************" << endl;
 //    cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
@@ -71,6 +65,46 @@ int main(int argc, char *argv[]) {
 //    printSummarizedMap<LowUtilRecord>(groupedLowUtilMap);
 }
 
+void printWasteMaps() {
+	/* Print the waste maps */
+	cout << "*************************************************" << endl;
+	cout << "               ZERO REUSE MAP                    " << endl;
+	cout << "*************************************************" << endl;
+	for (auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) {
+		cout << it->first << endl;
+		cout << (ZeroReuseRecord&) (it->second) << endl;
+	}
+	cout << endl;
+	/* Print the waste maps */
+	cout << "*************************************************" << endl;
+	cout << "               LOW UTILIZATION MAP               " << endl;
+	cout << "*************************************************" << endl;
+	for (auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++) {
+		cout << it->first << endl;
+		cout << it->second << endl;
+	}
+}
+
+template <class T>
+static void printSummarizedMap(std::multimap<int, std::tuple<std::string, std::vector<T>>> &groupedMap)
+{
+	cout << "in MapSummarizer's printSummarizeMap" << endl;
+    for(auto it = groupedMap.rbegin(); it != groupedMap.rend(); it++)
+    {
+//	        cout << it->first << " waste occurrences" << endl;
+//
+//	        std::tuple<std::string, std::vector<T>> gRecs = it->second;
+//
+//	        std::string accessSite = get<0>(gRecs);
+//	        std::vector<T> recs = get<1>(gRecs);
+//
+//	        cout << accessSite << endl;
+//
+//	        for(int i = 0; i < recs.size(); i++) {
+//	        	cout << recs[i] << endl;
+//	        }
+    }
+}
 /* Right now we don't check that the number of sets and the cache line
  * size are a power of two, but we probably should.
  */
@@ -124,7 +158,8 @@ void analyzeTrace(char* fileName) {
 	}
 	traceFile.close();
 
-	cacheAnalyzer->zeroReuseSummary();
+//	MapSummarizer::summarizeMap(cacheAnalyzer->getZeroReuseMap());
+//	MapSummarizer::summarizeMap(cacheAnalyzer->getLowUtilMap());
 
 	delete cacheAnalyzer;
 }

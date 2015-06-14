@@ -9,35 +9,34 @@
 using namespace std;
 
 const float LOW_UTIL_THRESHOLD = 0.5;
-std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
-std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
+//std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
+//std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
 CacheLine::CacheLine() {
-    	/* this is ugly, but C++ doesn't
-    	 * allow to allocate an array and
-    	 * initialize all members with the
-    	 * same constructor at the same time.
-    	*/
+    /* this is ugly, but C++ doesn't
+     * allow to allocate an array and
+     * initialize all members with the
+     * same constructor at the same time.
+    */
 
-    	/* Size is given in bytes */
-	    lineSize = CACHE_LINE_SIZE;
-	    address = 0;
-	    tag = 0;
-	    tagMaskBits = 0;
-	    initAccessSize = 0;
-	    accessSite = "";
-	    varInfo = "";
-	    timesReusedBeforeEvicted = 0;
-	    timeStamp = 0;
-	    bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize);
-	    bytesUsed->reset();
-
+    /* Size is given in bytes */
+	lineSize = CACHE_LINE_SIZE;
+	address = 0;
+	tag = 0;
+	tagMaskBits = 0;
+	initAccessSize = 0;
+	accessSite = "";
+	varInfo = "";
+	timesReusedBeforeEvicted = 0;
+	timeStamp = 0;
+	bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize);
+	bytesUsed->reset();
 }
 
 /* Print info about the access that caused this line to be
  * brought into the cache */
 void CacheLine::printFaultingAccessInfo() {
-	    cout<< "0x" << hex << address << dec << " " << initAccessSize << " "
-		<< accessSite << varInfo << endl;
+	cout << "0x" << hex << address << dec << " " << initAccessSize << " "
+			<< accessSite << varInfo << endl;
 }
 
 void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string accessSite, string varInfo, size_t timeStamp) {
@@ -53,9 +52,9 @@ void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string a
 }
 
 bool CacheLine::valid(size_t address) {
-    if(address >> tagMaskBits == tag)
+    if(address >> tagMaskBits == tag) {
     	return true;
-
+    }
     return false;
 }
 
@@ -86,7 +85,7 @@ void CacheLine::access(size_t address, unsigned short accessSize, size_t timeSta
     }
 }
 
-void CacheLine::resetLine() {
+void CacheLine::clearLine() {
 	address = 0;
 	tag = 0;
 	accessSite = "";
@@ -105,23 +104,70 @@ void CacheLine::evict() {
     }
 
     if(timesReusedBeforeEvicted == 0) {
-    	zeroReuseMap.insert(pair<string, ZeroReuseRecord>
+    	Main::addZeroReuseRecord(pair<string, ZeroReuseRecord>
     					    (accessSite,
     					     ZeroReuseRecord(varInfo, address)));
+//    	zeroReuseMap.insert(pair<string, ZeroReuseRecord>
+//    					    (accessSite,
+//    					     ZeroReuseRecord(varInfo, address)));
     }
 
     if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-		lowUtilMap.insert(pair<string, LowUtilRecord>
+    	Main::addLowUtilRecord(pair<string, LowUtilRecord>
 				  (accessSite,
 				   LowUtilRecord(varInfo, address, bytesUsed->count())));
+//		lowUtilMap.insert(pair<string, LowUtilRecord>
+//				  (accessSite,
+//				   LowUtilRecord(varInfo, address, bytesUsed->count())));
     }
-	resetLine();
+	clearLine();
 }
-
-void CacheLine::printZeroReuseSummary(multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap) {
-	MapSummarizer::summarizeMap(zeroReuseMap, groupedZeroReuseMap);
-	//MapSummarizer::printSummarizedMap(groupedZeroReuseMap);
-}
+//void CacheLine::printZeroReuseDetail() {
+//	cout << "*************************************************" << endl;
+//	cout << "               ZERO REUSE MAP                    " << endl;
+//	cout << "*************************************************" << endl;
+//
+//	cout << "Zero reuse map size: " << zeroReuseMap.size() << endl;
+//
+////	for(auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) {
+////		cout << it->first << endl;
+////	    cout << (ZeroReuseRecord&) it->second << endl;
+////	}
+//}
+//void CacheLine::printZeroReuseSummary(multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap) {
+//	cout << "*************************************************" << endl;
+//	cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
+//	cout << "*************************************************" << endl;
+//
+//	MapSummarizer::summarizeMap(zeroReuseMap, groupedZeroReuseMap);
+//	MapSummarizer::printSummarizedMap(groupedZeroReuseMap);
+//}
+//
+//void CacheLine::printLowUtilDetail() {
+//	cout << "*************************************************" << endl;
+//	cout << "               LOW UTILIZATION MAP               " << endl;
+//	cout << "*************************************************" << endl;
+//
+//	cout << "Low util map size: " << lowUtilMap.size() << endl;
+////	for(auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++) {
+////		cout << it->first << endl;
+////		cout << it->second << endl;
+////	}
+//}
+//void CacheLine::printLowUtilSummary(multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap) {
+//	cout << "*************************************************" << endl;
+//	cout << "         LOW UTILIZATION MAP SUMMARIZED          " << endl;
+//	cout << "*************************************************" << endl;
+//
+//	MapSummarizer::summarizeMap(lowUtilMap, groupedLowUtilMap);
+//	MapSummarizer::printSummarizedMap(groupedLowUtilMap);
+//}
+//std::unordered_multimap <std::string, ZeroReuseRecord> CacheLine::getZeroReuseMap() {
+//	return zeroReuseMap;
+//}
+//std::unordered_multimap <std::string, LowUtilRecord> CacheLine::getLowUtilMap() {
+//	return lowUtilMap;
+//}
 
 void CacheLine::printParams() {
     cout << "Line size = " << lineSize << endl;
