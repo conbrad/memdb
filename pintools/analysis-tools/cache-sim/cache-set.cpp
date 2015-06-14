@@ -71,27 +71,6 @@ void CacheSet::access(size_t address, unsigned short accessSize, std::string acc
     CacheLine *line = findCleanOrVictim(currentTime);
     line->setAndAccess(address, accessSize, accessSite, varInfo, currentTime);
 }
-//void CacheSet::printZeroReuseDetail() {
-//	for(int i = 0; i < associativity; i++) {
-//		cacheLines[i].printZeroReuseDetail();
-//	}
-//}
-//void CacheSet::zeroReuseSummary(multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap) {
-//	for(int i = 0; i < associativity; i++) {
-//		cacheLines[i].printZeroReuseSummary(groupedZeroReuseMap);
-//	}
-//}
-//
-//void CacheSet::printLowUtilDetail() {
-//	for(int i = 0; i < associativity; i++) {
-//		cacheLines[i].printLowUtilDetail();
-//	}
-//}
-//void CacheSet::lowUtilSummary(multimap <int, tuple<string, vector<LowUtilRecord>>> groupedZeroReuseMap) {
-//	for(int i = 0; i < associativity; i++) {
-//		cacheLines[i].printLowUtilSummary(groupedZeroReuseMap);
-//	}
-//}
 
 void CacheSet::printParams() {
     cout << "Associativity = " << associativity << endl;

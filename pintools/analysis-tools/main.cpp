@@ -158,9 +158,6 @@ void analyzeTrace(char* fileName) {
 	}
 	traceFile.close();
 
-//	MapSummarizer::summarizeMap(cacheAnalyzer->getZeroReuseMap());
-//	MapSummarizer::summarizeMap(cacheAnalyzer->getLowUtilMap());
-
 	delete cacheAnalyzer;
 }
 

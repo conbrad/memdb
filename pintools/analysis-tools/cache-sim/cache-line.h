@@ -60,12 +60,6 @@ public:
     void access(size_t address, unsigned short accessSize, size_t timeStamp);
     void evict();
     void printParams();
-//    void printZeroReuseDetail();
-//    void printZeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
-//    void printLowUtilDetail();
-//    void printLowUtilSummary(std::multimap <int, std::tuple<std::string, std::vector<LowUtilRecord>>> groupedLowUtilMap);
-//    std::unordered_multimap <std::string, ZeroReuseRecord> getZeroReuseMap();
-//    std::unordered_multimap <std::string, LowUtilRecord> getLowUtilMap();
 
 };
 
