@@ -27,6 +27,9 @@ public:
 	CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize);
 	~CacheWasteAnalysis();
 	void parseAndSimulate(std::string line);
+	void printWasteMaps();
+	void summarizeZeroReuseMap();
+	void summarizeLowUtilMap();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "../main.h"
+#include "../cache-waste-analysis.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 	this->numSets = numSets;
 	this->assoc = assoc;
 	this->lineSize = lineSize;
-	sets = new CacheSet[numSets];
+	this->sets = new CacheSet[numSets];
 
 	/* This is by how many bits we have to shift the
 	 * address to compute the tag. */
@@ -21,7 +22,6 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 void Cache::access(size_t address, unsigned short accessSize,
 	string accessSite, string varInfo) {
 
-	Main::incrementFunctionCount(accessSite);
     /* See if the access spans two cache lines.
      */
     int lineOffset = address % lineSize;
@@ -36,20 +36,14 @@ void Cache::access(size_t address, unsigned short accessSize,
      * spills into another cache line.
      */
     uint16_t bytesFittingIntoFirstLine = lineSize - lineOffset;
-    size_t addressOfFirstByteNotFitting =
-	address + bytesFittingIntoFirstLine;
+    size_t addressOfFirstByteNotFitting = address + bytesFittingIntoFirstLine;
     uint16_t sizeOfSpillingAccess = accessSize - bytesFittingIntoFirstLine;
-	#if VERBOSE
-    	cerr << "SPANNING ACCESS: 0x" << hex << address
-    			<< dec << " " << accessSize << " " << accessSite
-				<< " " << varInfo << endl;
-    	cerr << "Split into: " << endl;
-    	cerr << "\t0x" << hex << address << dec << " "
-    			<< bytesFittingIntoFirstLine << endl;
-    	cerr << "\t0x" << hex << addressOfFirstByteNotFitting << dec << " "
-    			<< sizeOfSpillingAccess << endl;
-	#endif
 
+    if(VERBOSE) {
+    	verboseSpanningAccessOutput(address, accessSize, accessSite, varInfo);
+    	verboseSplitAccessOutput(address, bytesFittingIntoFirstLine);
+    	verboseSpilledAccessOutput(addressOfFirstByteNotFitting, sizeOfSpillingAccess);
+    }
 
     /* Split them into two accesses */
     __access(address, bytesFittingIntoFirstLine, accessSite, varInfo);
@@ -58,6 +52,23 @@ void Cache::access(size_t address, unsigned short accessSize,
      * spans more than two lines. */
     access(addressOfFirstByteNotFitting, sizeOfSpillingAccess,
 	   accessSite, varInfo);
+}
+void Cache::verboseSpanningAccessOutput(size_t address, unsigned short accessSize,
+		string accessSite, string varInfo) {
+	cerr << "SPANNING ACCESS: 0x" << hex << address
+			<< dec << " " << accessSize << " " << accessSite
+			<< " " << varInfo << endl;
+}
+
+void Cache::verboseSplitAccessOutput(size_t address, uint16_t bytesFittingIntoFirstLine) {
+	cerr << "Split into: " << endl;
+	cerr << "\t0x" << hex << address << dec << " "
+			<< bytesFittingIntoFirstLine << endl;
+}
+
+void Cache::verboseSpilledAccessOutput(size_t addressOfFirstByteNotFitting, uint16_t sizeOfSpillingAccess) {
+	cerr << "\t0x" << hex << addressOfFirstByteNotFitting << dec << " "
+	    			<< sizeOfSpillingAccess << endl;
 }
 
 /* Here we assume that accesses would not be spanning cache
@@ -69,13 +80,29 @@ void Cache::__access(size_t address, unsigned short accessSize,
     int setNum = (address >> (int)log2(lineSize)) % numSets;
 
     assert(setNum < numSets);
-	#if VERBOSE
-    	cout << hex << address << dec << " maps into set #" << setNum << endl;
-	#endif
+
+    if(VERBOSE) {
+    	verboseSetOutput(address, setNum);
+    }
+
     sets[setNum].access(address, accessSize, accessSite, varInfo);
 
 }
 
+void Cache::verboseSetOutput(size_t address, int setNum) {
+	cout << hex << address << dec << " maps into set #" << setNum << endl;
+}
+
+void Cache::printWasteMaps() {
+	sets->cacheLines->printWasteMaps();
+}
+
+void Cache::summarizeZeroReuseMap() {
+	sets->cacheLines->summarizeZeroReuseMap();
+}
+void Cache::summarizeLowUtilMap() {
+	sets->cacheLines->summarizeLowUtilMap();
+}
 void Cache::printParams() {
     cout << "Line size      = " << lineSize << endl;
     cout << "Number of sets = " << numSets << endl;

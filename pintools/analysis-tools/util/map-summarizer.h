@@ -32,20 +32,19 @@ public:
 	static void summarizeMap(std::unordered_multimap<std::string, T> &ungroupedMap,
 			       	  	  	 std::multimap<int, std::tuple<std::string, std::vector<T>>> &groupedMap) {
 
-		cout << "in MapSummarizer's summarizeMap" << endl;
-		for(auto it = ungroupedMap.begin(); it != ungroupedMap.end(); it++) {
+		for(auto record = ungroupedMap.begin(); record != ungroupedMap.end(); record++) {
 			std::vector<T> curVector;
-			std::string curAccessSite = it->first;
+			std::string curAccessSite = record->first;
 
 			do {
-				curVector.push_back(it->second);
-				++it;
-			} while (it != ungroupedMap.end() && curAccessSite.compare(it->first)==0);
+				curVector.push_back(record->second);
+				++record;
+			} while (record != ungroupedMap.end() && curAccessSite.compare(record->first)==0);
 
 			std::tuple<std::string, std::vector<T>> gRecs = make_tuple(curAccessSite, curVector);
 			groupedMap.insert(make_pair(curVector.size(), gRecs));
 
-			if(it == ungroupedMap.end())
+			if(record == ungroupedMap.end())
 			  break;
 	    }
 	}
@@ -53,21 +52,20 @@ public:
 	template <class T>
 	static void printSummarizedMap(std::multimap<int, std::tuple<std::string, std::vector<T>>> &groupedMap)
 	{
-		cout << "in MapSummarizer's printSummarizeMap" << endl;
 	    for(auto it = groupedMap.rbegin(); it != groupedMap.rend(); it++)
 	    {
-//	        cout << it->first << " waste occurrences" << endl;
-//
-//	        std::tuple<std::string, std::vector<T>> gRecs = it->second;
-//
-//	        std::string accessSite = get<0>(gRecs);
-//	        std::vector<T> recs = get<1>(gRecs);
-//
-//	        cout << accessSite << endl;
-//
-//	        for(int i = 0; i < recs.size(); i++) {
-//	        	cout << recs[i] << endl;
-//	        }
+	        cout << it->first << " waste occurrences" << endl;
+
+	        std::tuple<std::string, std::vector<T>> gRecs = it->second;
+
+	        std::string accessSite = get<0>(gRecs);
+	        std::vector<T> recs = get<1>(gRecs);
+
+	        cout << accessSite << endl;
+
+	        for(int i = 0; i < recs.size(); i++) {
+	        	cout << recs[i] << endl;
+	        }
 	    }
 	}
 };

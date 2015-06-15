@@ -25,10 +25,6 @@ private:
     int lineSize;
     int tagMaskBits;
 
-	void clearLine();
-
-public:
-    // TODO make fields private for safety
     /* virtual address responsible for populating this cache line */
     std::size_t address;
     std::size_t tag;
@@ -49,6 +45,10 @@ public:
     */
     std::bitset<MAX_LINE_SIZE> *bytesUsed;
 
+	void clearLine();
+	void incrementFunctionCount(std::string functionName);
+
+public:
     /* Virtual time of access */
     size_t timeStamp;
     unsigned short timesReusedBeforeEvicted;
@@ -60,6 +60,10 @@ public:
     void access(size_t address, unsigned short accessSize, size_t timeStamp);
     void evict();
     void printParams();
+    void summarizeZeroReuseMap();
+    void summarizeLowUtilMap();
+    void printFunctionAccessCounts();
+    void printWasteMaps();
 
 };
 

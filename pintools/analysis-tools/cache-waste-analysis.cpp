@@ -51,7 +51,7 @@
 
 using namespace std;
 
-multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap;
+
 multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
 
 
@@ -140,7 +140,18 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
     }
 
     cache->access(address, accessSize, accessSite, varInfo);
+}
 
+void CacheWasteAnalysis::printWasteMaps() {
+	cache->printWasteMaps();
+}
+
+void CacheWasteAnalysis::summarizeZeroReuseMap() {
+	cache->summarizeZeroReuseMap();
+}
+
+void CacheWasteAnalysis::summarizeLowUtilMap() {
+	cache->summarizeLowUtilMap();
 }
 
 void CacheWasteAnalysis::inputError() {

@@ -18,6 +18,10 @@ private:
 	int lineSize;
 	int tagMaskBits;
 	void __access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
+	void verboseSetOutput(size_t address, int setNum);
+	void verboseSpanningAccessOutput(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
+	void verboseSplitAccessOutput(size_t address, uint16_t bytesFittingIntoFirstLine);
+	void verboseSpilledAccessOutput(size_t addressOfFirstByteNotFitting, uint16_t sizeOfSpillingAccess);
 
 public:
 	// TODO make private for safety
@@ -25,5 +29,8 @@ public:
     Cache(int numSets, int assoc, int lineSize);
     void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
     void printParams();
+    void printWasteMaps();
+    void summarizeZeroReuseMap();
+    void summarizeLowUtilMap();
 };
 #endif /* CACHE_H_ */

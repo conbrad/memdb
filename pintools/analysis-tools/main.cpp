@@ -32,103 +32,13 @@ void userAssociativityMessage(char* nptr);
 void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
 
-void printWasteMaps();
-void printFunctionAccessCounts();
-
-std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
-std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
-static map<string, int> functionAccessCount;
-
-void Main::addZeroReuseRecord(pair<string, ZeroReuseRecord> entry) {
-	zeroReuseMap.insert(entry);
-}
-
-void Main::addLowUtilRecord(pair<string, LowUtilRecord> entry) {
-	lowUtilMap.insert(entry);
-}
-
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
 
 	fileName = parseInputOptions(argc, argv, fileName);
 	analyzeTrace(fileName);
-	printWasteMaps();
-	printFunctionAccessCounts();
-//    summarizeMap<ZeroReuseRecord>(zeroReuseMap, groupedZeroReuseMap);
-//    cout << "*************************************************" << endl;
-//    cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
-//    cout << "*************************************************" << endl;
-//    printSummarizedMap<ZeroReuseRecord>(groupedZeroReuseMap);
-//
-//    summarizeMap<LowUtilRecord>(lowUtilMap, groupedLowUtilMap);
-//    cout << endl;
-//    cout << "*************************************************" << endl;
-//    cout << "         LOW UTILIZATION MAP SUMMARIZED          " << endl;
-//    cout << "*************************************************" << endl;
-//    printSummarizedMap<LowUtilRecord>(groupedLowUtilMap);
 }
 
-void Main::incrementFunctionCount(string functionName) {
-	map<string,int>::iterator functionKey = functionAccessCount.find(functionName);
-	if(functionKey != functionAccessCount.end()) {
-		functionKey->second = functionKey->second++;
-	} else {
-		functionAccessCount.insert(make_pair(functionName, 1));
-	}
-}
-void printFunctionAccessCounts() {
-	cout << "*************************************************" << endl;
-	cout << "              FUNCTION ACCESS COUNTS             " << endl;
-	cout << "*************************************************" << endl;
-
-	for (auto it = functionAccessCount.begin(); it != functionAccessCount.end(); it++) {
-		cout << "Function name: " << it->first << endl;
-		cout << "Access count: " << it->second << endl;
-		cout << endl;
-
-	}
-	cout << endl;
-
-}
-void printWasteMaps() {
-	cout << "*************************************************" << endl;
-	cout << "               ZERO REUSE MAP                    " << endl;
-	cout << "*************************************************" << endl;
-	for (auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) {
-		cout << it->first << endl;
-		cout << (ZeroReuseRecord&) (it->second) << endl;
-	}
-	cout << endl;
-	/* Print the waste maps */
-	cout << "*************************************************" << endl;
-	cout << "               LOW UTILIZATION MAP               " << endl;
-	cout << "*************************************************" << endl;
-	for (auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++) {
-		cout << it->first << endl;
-		cout << it->second << endl;
-	}
-}
-
-template <class T>
-static void printSummarizedMap(std::multimap<int, std::tuple<std::string, std::vector<T>>> &groupedMap)
-{
-	cout << "in MapSummarizer's printSummarizeMap" << endl;
-    for(auto it = groupedMap.rbegin(); it != groupedMap.rend(); it++)
-    {
-//	        cout << it->first << " waste occurrences" << endl;
-//
-//	        std::tuple<std::string, std::vector<T>> gRecs = it->second;
-//
-//	        std::string accessSite = get<0>(gRecs);
-//	        std::vector<T> recs = get<1>(gRecs);
-//
-//	        cout << accessSite << endl;
-//
-//	        for(int i = 0; i < recs.size(); i++) {
-//	        	cout << recs[i] << endl;
-//	        }
-    }
-}
 /* Right now we don't check that the number of sets and the cache line
  * size are a power of two, but we probably should.
  */
@@ -181,6 +91,10 @@ void analyzeTrace(char* fileName) {
 		cacheAnalyzer->parseAndSimulate(line);
 	}
 	traceFile.close();
+
+	cacheAnalyzer->printWasteMaps();
+	cacheAnalyzer->summarizeZeroReuseMap();
+	cacheAnalyzer->summarizeLowUtilMap();
 
 	delete cacheAnalyzer;
 }
