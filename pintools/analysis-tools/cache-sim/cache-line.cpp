@@ -33,8 +33,9 @@ CacheLine::CacheLine() {
 /* Print info about the access that caused this line to be
  * brought into the cache */
 void CacheLine::printFaultingAccessInfo() {
-	cout << "0x" << hex << address << dec << " " << initAccessSize << " "
-			<< accessSite << varInfo << endl;
+	cout << "0x" << hex << address << dec << " "
+		 << initAccessSize << " "
+		 << accessSite << varInfo << endl;
 }
 
 void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string accessSite, string varInfo, size_t timeStamp) {
@@ -97,20 +98,20 @@ void CacheLine::evict() {
     /* We are being evicted. Print our stats, update waste maps and clear. */
     if(WANT_RAW_OUTPUT) {
     	cout << bytesUsed->count() << "\t" << timesReusedBeforeEvicted
-    			<< "\t" << accessSite << "[" << varInfo << "]\t"
-				<< "0x" << hex << address << dec << endl;
+    		 << "\t" << accessSite << "[" << varInfo << "]\t"
+			 << "0x" << hex << address << dec << endl;
     }
 
     if(timesReusedBeforeEvicted == 0) {
-    	Main::addZeroReuseRecord(pair<string, ZeroReuseRecord>
-    					    (accessSite,
-    					     ZeroReuseRecord(varInfo, address)));
+    	Main::addZeroReuseRecord(
+    			pair<string, ZeroReuseRecord>
+    			(accessSite, ZeroReuseRecord(varInfo, address)));
     }
 
     if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-    	Main::addLowUtilRecord(pair<string, LowUtilRecord>
-				  (accessSite,
-				   LowUtilRecord(varInfo, address, bytesUsed->count())));
+    	Main::addLowUtilRecord(
+    			pair<string, LowUtilRecord>
+				(accessSite, LowUtilRecord(varInfo, address, bytesUsed->count())));
     }
 	clearLine();
 }

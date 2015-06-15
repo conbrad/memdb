@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <iostream>
 
+#include "../main.h"
+
 using namespace std;
 
 Cache::Cache(int numSets, int assoc, int lineSize) {
@@ -19,6 +21,7 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 void Cache::access(size_t address, unsigned short accessSize,
 	string accessSite, string varInfo) {
 
+	Main::incrementFunctionCount(accessSite);
     /* See if the access spans two cache lines.
      */
     int lineOffset = address % lineSize;

@@ -33,9 +33,11 @@ void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
 
 void printWasteMaps();
+void printFunctionAccessCounts();
 
 std::unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
 std::unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
+static map<string, int> functionAccessCount;
 
 void Main::addZeroReuseRecord(pair<string, ZeroReuseRecord> entry) {
 	zeroReuseMap.insert(entry);
@@ -51,6 +53,7 @@ int main(int argc, char *argv[]) {
 	fileName = parseInputOptions(argc, argv, fileName);
 	analyzeTrace(fileName);
 	printWasteMaps();
+	printFunctionAccessCounts();
 //    summarizeMap<ZeroReuseRecord>(zeroReuseMap, groupedZeroReuseMap);
 //    cout << "*************************************************" << endl;
 //    cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
@@ -65,8 +68,29 @@ int main(int argc, char *argv[]) {
 //    printSummarizedMap<LowUtilRecord>(groupedLowUtilMap);
 }
 
+void Main::incrementFunctionCount(string functionName) {
+	map<string,int>::iterator functionKey = functionAccessCount.find(functionName);
+	if(functionKey != functionAccessCount.end()) {
+		functionKey->second = functionKey->second++;
+	} else {
+		functionAccessCount.insert(make_pair(functionName, 1));
+	}
+}
+void printFunctionAccessCounts() {
+	cout << "*************************************************" << endl;
+	cout << "              FUNCTION ACCESS COUNTS             " << endl;
+	cout << "*************************************************" << endl;
+
+	for (auto it = functionAccessCount.begin(); it != functionAccessCount.end(); it++) {
+		cout << "Function name: " << it->first << endl;
+		cout << "Access count: " << it->second << endl;
+		cout << endl;
+
+	}
+	cout << endl;
+
+}
 void printWasteMaps() {
-	/* Print the waste maps */
 	cout << "*************************************************" << endl;
 	cout << "               ZERO REUSE MAP                    " << endl;
 	cout << "*************************************************" << endl;

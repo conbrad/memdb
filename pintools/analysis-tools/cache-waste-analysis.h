@@ -20,7 +20,6 @@ private:
     Cache *cache;
     size_t address;
     unsigned short accessSize;
-	bool accessRecord(std::istringstream& str);
 	void verboseOutput(const std::string& line);
 	void inputError();
 
@@ -28,12 +27,6 @@ public:
 	CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize);
 	~CacheWasteAnalysis();
 	void parseAndSimulate(std::string line);
-	void zeroReuseDetail();
-	void zeroReuseSummary();
-	void lowUtilDetail();
-	void lowUtilSummary();
-	std::unordered_multimap <std::string, LowUtilRecord> getLowUtilMap();
-	std::unordered_multimap <std::string, ZeroReuseRecord> getZeroReuseMap();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

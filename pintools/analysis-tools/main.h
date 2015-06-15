@@ -22,6 +22,7 @@ class Main {
 public:
 	static void addZeroReuseRecord(std::pair<std::string, ZeroReuseRecord> entry);
 	static void addLowUtilRecord(std::pair<std::string, LowUtilRecord> entry);
+	static void incrementFunctionCount(std::string functionName);
 };
 
 
