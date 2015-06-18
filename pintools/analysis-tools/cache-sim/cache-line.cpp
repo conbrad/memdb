@@ -2,6 +2,7 @@
 #include <bitset>
 #include <iostream>
 #include <assert.h>
+#include <iomanip>
 
 #include "../main.h"
 #include "../util/map-summarizer.h"
@@ -47,11 +48,11 @@ void CacheLine::printFaultingAccessInfo() {
 void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string accessSite, string varInfo, size_t timeStamp) {
     this->address = address;
     this->initAccessSize = accessSize;
-    tag = address >> tagMaskBits;
+    this->tag = address >> tagMaskBits;
     this->accessSite = accessSite;
     this->varInfo = varInfo;
-    timesReusedBeforeEvicted = 0;
-    bytesUsed->reset();
+    this->timesReusedBeforeEvicted = 0;
+    this->bytesUsed->reset();
 
     access(address, accessSize, timeStamp);
     incrementFunctionCount(accessSite);
@@ -123,13 +124,20 @@ void CacheLine::clearLine() {
 	bytesUsed->reset();
 }
 
+void CacheLine::printRawOutput() {
+	cout << left
+			<< setw(15) << bytesUsed->count()
+			<< setw(25)	<< timesReusedBeforeEvicted
+			<< setw(45) << accessSite << "<"
+			<< varInfo  << setw(25) << ">"
+			<< setw(0)	<< "[" << "0x" << hex << address << dec << "]" << endl;
+}
+
 void CacheLine::evict() {
 
     /* We are being evicted. Print our stats, update waste maps and clear. */
     if(WANT_RAW_OUTPUT) {
-    	cout << bytesUsed->count() << "\t" << timesReusedBeforeEvicted
-    		 << "\t" << accessSite << "[" << varInfo << "]\t"
-			 << "0x" << hex << address << dec << endl;
+		printRawOutput();
     }
 
     if(timesReusedBeforeEvicted == 0) {

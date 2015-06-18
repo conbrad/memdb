@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <iomanip>
 #include "main.h"
 
 #include "cache-waste-analysis.h"
@@ -13,7 +14,7 @@ using namespace std;
 int NUM_SETS = 8*1024;
 int ASSOC = 4; /* 4-way set associative */
 int CACHE_LINE_SIZE = 64;  /* in bytes */
-bool WANT_RAW_OUTPUT = false;
+bool WANT_RAW_OUTPUT = true;
 
 const char ASSOCIATIVITY_OPTION = 'a';
 const char FILENAME_OPTION = 'f';
@@ -31,6 +32,7 @@ void optionErrorMessage();
 void userAssociativityMessage(char* nptr);
 void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
+void printRawOutputDetails();
 
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
@@ -81,6 +83,10 @@ void analyzeTrace(char* fileName) {
 	CacheWasteAnalysis *cacheAnalyzer =
 			new CacheWasteAnalysis(NUM_SETS, ASSOC, CACHE_LINE_SIZE);
 
+	if(WANT_RAW_OUTPUT) {
+		printRawOutputDetails();
+	}
+
 	traceFile.open(fileName);
 	if (!traceFile.is_open()) {
 		openFileError(fileName);
@@ -98,7 +104,14 @@ void analyzeTrace(char* fileName) {
 
 	delete cacheAnalyzer;
 }
-
+void printRawOutputDetails() {
+	cout << left
+		 << setw(15) << "Bytes used:"
+	     << setw(25) << "Reuses Before Eviction:"
+	     << setw(45) << "Access site:"
+		 << setw(25) << "<Variable Info>:"
+		 << setw(0) << "Virtual Address:" << endl;
+}
 void noInputFileError() {
 	cerr << "Please provide input trace file with the -f option." << endl;
 	exit(-1);

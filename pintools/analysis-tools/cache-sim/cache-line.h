@@ -47,6 +47,7 @@ private:
 
 	void clearLine();
 	void incrementFunctionCount(std::string functionName);
+	void printRawOutput();
 
 public:
     /* Virtual time of access */
