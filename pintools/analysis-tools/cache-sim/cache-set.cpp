@@ -9,7 +9,7 @@ CacheSet::CacheSet() {
 	    associativity = ASSOC;
 	    cacheLineSize = CACHE_LINE_SIZE;
 	    currentTime = 0;
-	    cacheLines = new CacheLine[associativity];
+	    cacheLine = new CacheLine[associativity];
 }
 
 /* Find a cache line to evict or return a clean time
@@ -28,13 +28,13 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
      * so it will automatically get selected.
      */
     for(int i = 0; i < associativity; i++) {
-    	if(cacheLines[i].timeStamp < minTime) {
-    		minTime = cacheLines[i].timeStamp;
+    	if(cacheLine[i].virtualTimeStamp < minTime) {
+    		minTime = cacheLine[i].virtualTimeStamp;
     		minIndex = i;
     	}
 
 		#if VERBOSE
-    		cout << "block "<< i << " ts is " << cacheLines[i].timeStamp << endl;
+    		cout << "block "<< i << " ts is " << cacheLine[i].virtualTimeStamp << endl;
 		#endif
     }
     assert(minIndex >= 0);
@@ -44,35 +44,33 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
 	#endif
 
     /* Evict the line if it's not empty */
-    if(cacheLines[minIndex].timeStamp != 0) {
-    	cacheLines[minIndex].evict();
+    if(cacheLine[minIndex].virtualTimeStamp != 0) {
+    	cacheLine[minIndex].evict();
     }
-    return &(cacheLines[minIndex]);
+    return &(cacheLine[minIndex]);
 }
 
-/* See if any of the existing cache lines hold
- * that address. If so, access the cache line.
- * Otherwise, find someone to evict and populate
- * the cache line with the new data
- */
+bool CacheSet::cacheHit(size_t address, unsigned short accessSize) {
+	for (int i = 0; i < associativity; i++) {
+		if (cacheLine[i].valid(address)) {
+			cacheLine[i].access(address, accessSize, currentTime);
+			return true;
+		}
+	}
+	return false;
+}
+void CacheSet::cacheMiss(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo) {
+	    // See if there is an empty cache line or find someone to evict
+	    CacheLine *line = findCleanOrVictim(currentTime);
+	    line->setAndAccess(address, accessSize, accessSite, varInfo, currentTime);
+}
 void CacheSet::access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo) {
     currentTime++;
 
-    for(int i = 0; i < associativity; i++) {
-    	if(cacheLines[i].valid(address)) {
-    		cacheLines[i].access(address, accessSize, currentTime);
-    		return;
-    	}
-    }
-
-    /* If we are here, we did not find the data in cache.
-     * See if there is an empty cache line or find someone to evict.
-     */
-    CacheLine *line = findCleanOrVictim(currentTime);
-    line->setAndAccess(address, accessSize, accessSite, varInfo, currentTime);
+	if(!cacheHit(address, accessSize)) {
+		cacheMiss(address, accessSize, accessSite, varInfo);
+	}
 }
-
-void CacheSet::printParams() {
-    cout << "Associativity = " << associativity << endl;
-    cout << "Line size = " << cacheLineSize << endl;
+CacheLine* CacheSet::getCacheLine() {
+	return cacheLine;
 }

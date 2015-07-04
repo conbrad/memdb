@@ -12,11 +12,8 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 	this->numSets = numSets;
 	this->assoc = assoc;
 	this->lineSize = lineSize;
-	this->sets = new CacheSet[numSets];
-
-	/* This is by how many bits we have to shift the
-	 * address to compute the tag. */
-	tagMaskBits = log2(lineSize) + log2(numSets);
+	this->set = new CacheSet[numSets];
+	tagMaskBits = log2(lineSize) + log2(numSets);	// how many bits we have to shift the address to compute the tag
 }
 
 void Cache::access(size_t address, unsigned short accessSize,
@@ -85,23 +82,28 @@ void Cache::__access(size_t address, unsigned short accessSize,
     	verboseSetOutput(address, setNum);
     }
 
-    sets[setNum].access(address, accessSize, accessSite, varInfo);
-
+    set[setNum].access(address, accessSize, accessSite, varInfo);
 }
 
 void Cache::verboseSetOutput(size_t address, int setNum) {
 	cout << hex << address << dec << " maps into set #" << setNum << endl;
 }
+void Cache::printFunctionAccessCount() {
+	set->getCacheLine()->printFunctionAccessCounts();
+}
+void Cache::printLineAccesses() {
+	set->getCacheLine()->printLineAccesses();
+}
 
 void Cache::printWasteMaps() {
-	sets->cacheLines->printWasteMaps();
+	set->getCacheLine()->printWasteMaps();
 }
 
 void Cache::summarizeZeroReuseMap() {
-	sets->cacheLines->summarizeZeroReuseMap();
+	set->getCacheLine()->summarizeZeroReuseMap();
 }
 void Cache::summarizeLowUtilMap() {
-	sets->cacheLines->summarizeLowUtilMap();
+	set->getCacheLine()->summarizeLowUtilMap();
 }
 void Cache::printParams() {
     cout << "Line size      = " << lineSize << endl;

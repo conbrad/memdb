@@ -25,12 +25,14 @@ private:
 
 public:
 	// TODO make private for safety
-    CacheSet *sets;
+    CacheSet *set;
     Cache(int numSets, int assoc, int lineSize);
     void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
     void printParams();
     void printWasteMaps();
     void summarizeZeroReuseMap();
     void summarizeLowUtilMap();
+    void printLineAccesses();
+    void printFunctionAccessCount();
 };
 #endif /* CACHE_H_ */

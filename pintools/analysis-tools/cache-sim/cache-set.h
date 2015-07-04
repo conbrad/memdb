@@ -21,17 +21,18 @@ class CacheSet {
 private:
 	int associativity;
 	int cacheLineSize;
+    size_t currentTime;	// a virtual time ticks every time someone accesses this cache set
+	CacheLine *cacheLine;
+
+	void attemptCacheAccess(size_t address, unsigned short accessSize);
+	bool cacheHit(size_t address, unsigned short accessSize);
+	void cacheMiss(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
 
 public:
-    CacheLine *cacheLines;
-
-    /* a virtual time ticks every time someone
-     * accesses this cache set. */
-    size_t currentTime;
-
     CacheSet();
-    void printParams();
     CacheLine* findCleanOrVictim(size_t timeNow);
+    CacheLine* getCacheLine();
+    void printParams();
     void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
     void printZeroReuseDetail();
     void zeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);

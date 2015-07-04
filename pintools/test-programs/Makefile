@@ -1,8 +1,2 @@
-CC_TEST = gcc
-FLAGS_TEST = -g
-
 all:
-	$(CC_TEST) $(FLAGS_TEST) basic-pointer.c -o basic-pointer
-	
-clean:
-	rm basic-pointer
+	gcc -std=c99 -g  blackscholes.c -o blackscholes -lm

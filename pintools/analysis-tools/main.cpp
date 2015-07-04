@@ -14,7 +14,7 @@ using namespace std;
 int NUM_SETS = 8*1024;
 int ASSOC = 4; /* 4-way set associative */
 int CACHE_LINE_SIZE = 64;  /* in bytes */
-bool WANT_RAW_OUTPUT = true;
+bool WANT_RAW_OUTPUT = false;
 
 const char ASSOCIATIVITY_OPTION = 'a';
 const char FILENAME_OPTION = 'f';
@@ -99,8 +99,10 @@ void analyzeTrace(char* fileName) {
 	traceFile.close();
 
 	cacheAnalyzer->printWasteMaps();
-	cacheAnalyzer->summarizeZeroReuseMap();
-	cacheAnalyzer->summarizeLowUtilMap();
+//	cacheAnalyzer->summarizeZeroReuseMap();
+//	cacheAnalyzer->summarizeLowUtilMap();
+//	cacheAnalyzer->printLineAccesses();
+//	cacheAnalyzer->printFunctionAccessCount();
 
 	delete cacheAnalyzer;
 }

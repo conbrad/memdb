@@ -30,6 +30,8 @@ public:
 	void printWasteMaps();
 	void summarizeZeroReuseMap();
 	void summarizeLowUtilMap();
+	void printLineAccesses();
+	void printFunctionAccessCount();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

@@ -141,7 +141,12 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
 
     cache->access(address, accessSize, accessSite, varInfo);
 }
-
+void CacheWasteAnalysis::printFunctionAccessCount() {
+	cache->printFunctionAccessCount();
+}
+void CacheWasteAnalysis::printLineAccesses() {
+	cache->printLineAccesses();
+}
 void CacheWasteAnalysis::printWasteMaps() {
 	cache->printWasteMaps();
 }

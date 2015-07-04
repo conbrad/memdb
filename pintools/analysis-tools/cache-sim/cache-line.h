@@ -17,26 +17,22 @@
 #include "../record/zero-reuse-record.h"
 #include "../record/low-util-record.h"
 #include "../main.h"
+#include "cache-line-access.h"
+#include "function-location.h"
 
 class CacheLine {
 
 private:
-	/* In bytes */
-    int lineSize;
-    int tagMaskBits;
+    int lineSize;						// in bytes
+    int tagMaskBits;					// in bytes
 
-    /* virtual address responsible for populating this cache line */
-    std::size_t address;
+    std::size_t address;				// virtual address responsible for populating this cache line */
     std::size_t tag;
-    /* which code location caused that data to be brought
-     * into the cache line? */
-    std::string accessSite;
-    /* The size of the access that brought
-     *this line into cache */
-    unsigned short initAccessSize;
-    /* the name and the type of the corresponding variable,
-     * if we know it. */
-    std::string varInfo;
+    std::string accessSite;	    		// which code location caused that data to be brought into the cache line?
+    std::string varInfo;				// the name and the type of the corresponding variable, if we know it. */
+    unsigned short initAccessSize;	    // The size of the access that brought this line into cache
+    unsigned short timesReusedBeforeEvicted;
+    static const int FUNCTION_CALL_THRESHOLD = 0;
 
     /* This is a bitmap. There is a bit for each byte in the
      * cache line. If a byte sitting in the cache line is
@@ -44,28 +40,28 @@ private:
      * by setting the corresponding bit to "1".
     */
     std::bitset<MAX_LINE_SIZE> *bytesUsed;
-
 	void clearLine();
 	void incrementFunctionCount(std::string functionName);
 	void printRawOutput();
+	bool isHotFunction(const std::string accessSite);
+	void recordLineAccess(int lineOffset, const std::string& functionAndPath, const CacheLineAccess& functionLocation);
+	void recordFunctionAccess(std::vector<FunctionLocation> existingLocations, FunctionLocation functionLocation);
 
 public:
-    /* Virtual time of access */
-    size_t timeStamp;
-    unsigned short timesReusedBeforeEvicted;
+    size_t virtualTimeStamp;	// virtual time of access
 
     CacheLine();
-    void printFaultingAccessInfo();
-    void setAndAccess(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo, size_t timeStamp);
+    int access(size_t address, unsigned short accessSize, size_t timeStamp);
     bool valid(size_t address);
-    void access(size_t address, unsigned short accessSize, size_t timeStamp);
+    void setAndAccess(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo, size_t timeStamp);
     void evict();
     void printParams();
     void summarizeZeroReuseMap();
     void summarizeLowUtilMap();
     void printFunctionAccessCounts();
+    void printLineAccesses();
+    void printFaultingAccessInfo();
     void printWasteMaps();
-
 };
 
 #endif /* CACHE_LINE_H_ */

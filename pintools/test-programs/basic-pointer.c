@@ -6,23 +6,13 @@
  */
 
 #include<stdio.h>
-
+#include<stdlib.h>
 int main() {
-
-	int *ptr_one;
-
-	ptr_one = (int *)malloc(sizeof(int));
-
-	if (ptr_one == 0) {
-		printf("ERROR: Out of memory\n");
-		return 1;
+	for(int i=0; i<1000; i++) {
+		int *number = (int*)malloc(sizeof(int));
+		*number = i+2;
+		printf("%d\n", *number);
 	}
-
-	*ptr_one = 25;
-	printf("%d\n", *ptr_one);
-
-	free(ptr_one);
-
 	return 0;
 }
 
