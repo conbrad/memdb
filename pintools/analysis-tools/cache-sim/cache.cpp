@@ -96,14 +96,14 @@ void Cache::printLineAccesses() {
 }
 
 void Cache::printWasteMaps() {
-	set->getCacheLine()->printWasteMaps();
+	//set->getCacheLine()->printWasteMaps();
 }
 
 void Cache::summarizeZeroReuseMap() {
-	set->getCacheLine()->summarizeZeroReuseMap();
+	//set->getCacheLine()->summarizeZeroReuseMap();
 }
 void Cache::summarizeLowUtilMap() {
-	set->getCacheLine()->summarizeLowUtilMap();
+	//set->getCacheLine()->summarizeLowUtilMap();
 }
 void Cache::printParams() {
     cout << "Line size      = " << lineSize << endl;

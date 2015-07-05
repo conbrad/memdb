@@ -7,6 +7,7 @@
 
 #include "../main.h"
 #include "../util/map-summarizer.h"
+#include "../waste-record-collection.h"
 #include "function-location.h"
 
 using namespace std;
@@ -14,9 +15,6 @@ using namespace std;
 const float LOW_UTIL_THRESHOLD = 0.5;
 
 static map<string, int> functionAccessCount;
-
-unordered_multimap <std::string, ZeroReuseRecord> zeroReuseMap;
-unordered_multimap <std::string, LowUtilRecord> lowUtilMap;
 
 map<int, vector<CacheLineAccess>> lineAccesses;
 map<int, map<FunctionLocation, vector<int>>> lineFunctionAccesses;
@@ -169,15 +167,11 @@ void CacheLine::evict() {
     }
 
     if(timesReusedBeforeEvicted == 0) {
-    	zeroReuseMap.insert(
-    			pair<string, ZeroReuseRecord>
-    			(accessSite, ZeroReuseRecord(varInfo, address)));
+    	WasteRecordCollection::addZeroReuseRecord(accessSite, varInfo, address);
     }
 
     if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-    	lowUtilMap.insert(
-    			pair<string, LowUtilRecord>
-				(accessSite, LowUtilRecord(varInfo, address, bytesUsed->count())));
+    	WasteRecordCollection::addLowUtilRecord(accessSite, varInfo, address, bytesUsed->count());
     }
 	clearLine();
 }
@@ -190,44 +184,7 @@ void CacheLine::printRawOutput() {
 			<< varInfo  << setw(25) << ">"
 			<< setw(0)	<< "[" << "0x" << hex << address << dec << "]" << endl;
 }
-void CacheLine::summarizeZeroReuseMap() {
-	cout << "*************************************************" << endl;
-	cout << "         ZERO REUSE MAP SUMMARIZED               " << endl;
-	cout << "*************************************************" << endl;
 
-	multimap <int, tuple<string, vector<ZeroReuseRecord>>> groupedZeroReuseMap;
-	MapSummarizer::summarizeMap(zeroReuseMap, groupedZeroReuseMap);
-	MapSummarizer::printSummarizedMap(groupedZeroReuseMap);
-}
-
-void CacheLine::summarizeLowUtilMap() {
-	cout << "*************************************************" << endl;
-	cout << "         LOW UTILIZATION MAP SUMMARIZED          " << endl;
-	cout << "*************************************************" << endl;
-
-	multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
-	MapSummarizer::summarizeMap(lowUtilMap, groupedLowUtilMap);
-	MapSummarizer::printSummarizedMap(groupedLowUtilMap);
-}
-
-void CacheLine::printWasteMaps() {
-	cout << "*************************************************" << endl;
-	cout << "               ZERO REUSE MAP                    " << endl;
-	cout << "*************************************************" << endl;
-	for (auto it = zeroReuseMap.begin(); it != zeroReuseMap.end(); it++) {
-		cout << it->first << endl;
-		cout << (ZeroReuseRecord&) (it->second) << endl;
-	}
-	cout << endl;
-	/* Print the waste maps */
-	cout << "*************************************************" << endl;
-	cout << "               LOW UTILIZATION MAP               " << endl;
-	cout << "*************************************************" << endl;
-	for (auto it = lowUtilMap.begin(); it != lowUtilMap.end(); it++) {
-		cout << it->first << endl;
-		cout << it->second << endl;
-	}
-}
 void CacheLine::printLineAccesses() {
 	cout << "*************************************************" << endl;
 	cout << "              CACHE LINE ACCESSES             	  " << endl;
@@ -258,7 +215,9 @@ void CacheLine::printFunctionAccessCounts() {
 	}
 	cout << endl;
 }
-
+size_t CacheLine::getVirtualTimeStamp() {
+	return virtualTimeStamp;
+}
 void CacheLine::printParams() {
     cout << "Line size = " << lineSize << endl;
 }

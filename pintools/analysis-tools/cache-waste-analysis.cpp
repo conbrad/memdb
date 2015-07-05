@@ -29,6 +29,7 @@
 #include <memory>
 
 #include "cache-waste-analysis.h"
+#include "waste-record-collection.h"
 
 /* The following data structures are used to summarize
  * the cache waste per source location.
@@ -148,15 +149,15 @@ void CacheWasteAnalysis::printLineAccesses() {
 	cache->printLineAccesses();
 }
 void CacheWasteAnalysis::printWasteMaps() {
-	cache->printWasteMaps();
+	WasteRecordCollection::printWasteMaps();
 }
 
 void CacheWasteAnalysis::summarizeZeroReuseMap() {
-	cache->summarizeZeroReuseMap();
+	WasteRecordCollection::summarizeZeroReuseMap();
 }
 
 void CacheWasteAnalysis::summarizeLowUtilMap() {
-	cache->summarizeLowUtilMap();
+	WasteRecordCollection::summarizeLowUtilMap();
 }
 
 void CacheWasteAnalysis::inputError() {

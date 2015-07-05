@@ -28,8 +28,8 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
      * so it will automatically get selected.
      */
     for(int i = 0; i < associativity; i++) {
-    	if(cacheLine[i].virtualTimeStamp < minTime) {
-    		minTime = cacheLine[i].virtualTimeStamp;
+    	if(cacheLine[i].getVirtualTimeStamp() < minTime) {
+    		minTime = cacheLine[i].getVirtualTimeStamp();
     		minIndex = i;
     	}
 
@@ -44,7 +44,7 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
 	#endif
 
     /* Evict the line if it's not empty */
-    if(cacheLine[minIndex].virtualTimeStamp != 0) {
+    if(cacheLine[minIndex].getVirtualTimeStamp() != 0) {
     	cacheLine[minIndex].evict();
     }
     return &(cacheLine[minIndex]);
