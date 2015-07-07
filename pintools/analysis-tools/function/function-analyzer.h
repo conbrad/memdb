@@ -13,10 +13,9 @@
 class FunctionAnalyzer {
 private:
 	FunctionAnalyzer(){}; 	// disallows instantiation
-	static std::vector<Function> functionsAccessed;
 public:
-	void addFunction(Function function, VariableAccess variableAccess);
-	void analyzeFunctions();
+	static void addFunction(Function function, VariableAccess variableAccess);
+	static void analyzeFunctions();
 };
 
 #endif /* FUNCTION_ANALYZER_H_ */

@@ -30,6 +30,7 @@
 
 #include "cache-waste-analysis.h"
 #include "waste-record-collection.h"
+#include "function/function-analyzer.h"
 
 /* The following data structures are used to summarize
  * the cache waste per source location.
@@ -142,6 +143,10 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
 
     cache->access(address, accessSize, accessSite, varInfo);
 }
+void CacheWasteAnalysis::analyzeFunctionCalls() {
+	FunctionAnalyzer::analyzeFunctions();
+}
+
 void CacheWasteAnalysis::printFunctionAccessCount() {
 	cache->printFunctionAccessCount();
 }

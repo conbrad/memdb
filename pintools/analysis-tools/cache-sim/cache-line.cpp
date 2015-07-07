@@ -75,6 +75,9 @@ void CacheLine::recordAccess() {
 	int colNumber = AccessParser::colNumFromPath(accessSite);
 	VariableAccess variable(initAccessSize, lineNumber, colNumber, variableName);
 	Function functionAccess(functionName, accessSite);
+	functionAccess.addVariableAccess(variable);
+
+	FunctionAnalyzer::addFunction(functionAccess, variable);
 }
 
 void CacheLine::incrementFunctionCount(string functionName) {
