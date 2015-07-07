@@ -3,11 +3,14 @@ include ../Makefile.inc
 RECORD_DIR = record
 CACHE_DIR = cache-sim
 UTIL_DIR = util
+FUNCTION = function
 
-SOURCES = $(RECORD_SOURCES) $(UTIL_SOURCES) $(CACHE_SOURCES) cache-waste-analysis.cpp waste-record-collection.cpp main.cpp
+SOURCES = $(RECORD_SOURCES) $(UTIL_SOURCES) $(FUNCTION_SOURCES) $(CACHE_SOURCES) cache-waste-analysis.cpp waste-record-collection.cpp main.cpp
 RECORD_SOURCES = $(RECORD_DIR)/waste-record.cpp $(RECORD_DIR)/zero-reuse-record.cpp $(RECORD_DIR)/low-util-record.cpp
 CACHE_SOURCES = $(CACHE_DIR)/cache-line.cpp $(CACHE_DIR)/cache-set.cpp $(CACHE_DIR)/cache.cpp
-UTIL_SOURCES = $(UTIL_DIR)/map-summarizer.h
+UTIL_SOURCES = $(UTIL_DIR)/map-summarizer.h $(UTIL_DIR)/access-parser.cpp
+FUNCTION_SOURCES = $(FUNCTION)/function.cpp $(FUNCTION)/function-analyzer.cpp $(FUNCTION)/variable-access.cpp
+
 
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 

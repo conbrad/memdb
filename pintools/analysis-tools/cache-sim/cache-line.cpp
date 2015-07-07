@@ -8,7 +8,10 @@
 #include "../main.h"
 #include "../util/map-summarizer.h"
 #include "../waste-record-collection.h"
-#include "function-location.h"
+#include "../function/function-analyzer.h"
+#include "../function/function.h"
+#include "../function/variable-access.h"
+#include "../util/access-parser.h"
 
 using namespace std;
 
@@ -21,9 +24,6 @@ map<int, map<FunctionLocation, vector<int>>> lineFunctionAccesses;
 
 typedef std::map<int, std::map<std::string, std::vector<CacheLineAccess>>> FunctionLineMap;
 FunctionLineMap lineAccessFunctions;
-
-// helpers
-string getFunctionName(const char *str);
 
 CacheLine::CacheLine() {
     /* this is ugly, but C++ doesn't
@@ -55,16 +55,6 @@ void CacheLine::printFaultingAccessInfo() {
 		 << accessSite << varInfo << endl;
 }
 
-void CacheLine::recordLineAccess(int lineOffset, const string& functionAndPath, const CacheLineAccess& cacheLineAccess) {
-//	map<int, map<string, vector<CacheLineAccess>>>::iterator key = lineAccessFunctions.find(lineOffset);
-//
-//	if (key != lineAccessFunctions.end()) {
-//		lineAccessFunctions[lineOffset][functionAndPath] = vector<CacheLineAccess>();
-//	} else {
-//		lineAccessFunctions[lineOffset][functionAndPath].push_back(cacheLineAccess);
-//	}
-}
-
 void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string accessSite, string varInfo, size_t timeStamp) {
     this->address = address;
     this->initAccessSize = accessSize;
@@ -75,26 +65,16 @@ void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string a
     this->bytesUsed->reset();
 
     int lineOffset = access(address, accessSize, timeStamp);
-    CacheLineAccess cacheLineAccess = {varInfo, accessSite, timeStamp, accessSize};
-    FunctionLocation functionLocation = { getFunctionName(accessSite.c_str()), accessSite };
-    string functionAndPath = getFunctionName(accessSite.c_str()) + "-" + accessSite;
-	recordLineAccess(lineOffset, functionAndPath, cacheLineAccess);
-    incrementFunctionCount(accessSite);
+    recordAccess();
+
 }
-
-string getFunctionName(const char *str) {
-    char c = ' ';
-
-    do
-    {
-        const char *begin = str;
-
-        while(*str != c && *str)
-            str++;
-
-        return string(begin, str);
-    } while (0 != *str++);
-    return str;
+void CacheLine::recordAccess() {
+	string variableName = AccessParser::variableNameFromPath(varInfo);
+	string functionName = AccessParser::functionNameFromPath(accessSite);
+	int lineNumber = AccessParser::lineNumFromPath(accessSite);
+	int colNumber = AccessParser::colNumFromPath(accessSite);
+	VariableAccess variable(initAccessSize, lineNumber, colNumber, variableName);
+	Function functionAccess(functionName, accessSite);
 }
 
 void CacheLine::incrementFunctionCount(string functionName) {
@@ -190,16 +170,16 @@ void CacheLine::printLineAccesses() {
 	cout << "              CACHE LINE ACCESSES             	  " << endl;
 	cout << "*************************************************" << endl;
 	cout << "# Function calls >=" << FUNCTION_CALL_THRESHOLD << endl;
-	for (auto lineIt = lineAccesses.begin(); lineIt != lineAccesses.end(); lineIt++) {
-		cout << "Line offset: " << lineIt->first << endl;
-	    for (auto &cacheLineAccess : lineIt->second) {
-	    	if(isHotFunction(cacheLineAccess.accessSite)) {
-	    		cout 	<< "Function: " << cacheLineAccess.accessSite
-	    				<< ", access size: " << cacheLineAccess.accessSize
-	    				<< endl;
-	    	}
-	    }
-	}
+//	for (auto lineIt = lineAccesses.begin(); lineIt != lineAccesses.end(); lineIt++) {
+//		cout << "Line offset: " << lineIt->first << endl;
+//	    for (auto &cacheLineAccess : lineIt->second) {
+//	    	if(isHotFunction(cacheLineAccess.accessSite)) {
+//	    		cout 	<< "Function: " << cacheLineAccess.accessSite
+//	    				<< ", access size: " << cacheLineAccess.accessSize
+//	    				<< endl;
+//	    	}
+//	    }
+//	}
 }
 
 void CacheLine::printFunctionAccessCounts() {
@@ -209,7 +189,7 @@ void CacheLine::printFunctionAccessCounts() {
 	cout << "*************************************************" << endl;
 
 	for(auto &functionAccess : functionAccessCount) {
-		cout 	<< getFunctionName(functionAccess.first.c_str())
+		cout 	<< AccessParser::functionNameFromPath(functionAccess.first.c_str())
 				<< ", " << functionAccess.second
 				<< endl;
 	}

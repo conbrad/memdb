@@ -43,6 +43,7 @@ private:
     std::bitset<MAX_LINE_SIZE> *bytesUsed;
 	void clearLine();
 	void incrementFunctionCount(std::string functionName);
+	void recordAccess();
 	void printRawOutput();
 	bool isHotFunction(const std::string accessSite);
 	void recordLineAccess(int lineOffset, const std::string& functionAndPath, const CacheLineAccess& functionLocation);
