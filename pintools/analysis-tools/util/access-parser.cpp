@@ -5,6 +5,7 @@
 using namespace std;
 
 const string DELIM  = ":";
+const int ACTUAL_PATH_OFFSET = 2;
 
 string AccessParser::functionNameFromPath(const string &accessPath) {
 	string buffer;
@@ -24,6 +25,29 @@ string AccessParser::variableNameFromPath(const string &varInfo) {
     ss >> buffer;
 
     return buffer;
+}
+
+string AccessParser::getNthWord(const string &input, int numWordsToSkip) {
+	string buffer;
+	stringstream ss(input);
+
+	for(int i = 0; i < numWordsToSkip; i++) {
+		ss >> buffer;
+	}
+
+	return buffer;
+}
+
+string AccessParser::stripLineNumbers(const string &accessPath) {
+	string actualPath = getNthWord(accessPath, ACTUAL_PATH_OFFSET);
+
+	auto start = 0U;
+
+	// find first instance of ':'
+    auto end = actualPath.find(DELIM);
+
+    string result = actualPath.substr(start, end - start);
+    return result;
 }
 
 int AccessParser::lineNumFromPath(const string &accessPath) {

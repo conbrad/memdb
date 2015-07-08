@@ -13,9 +13,11 @@
 class AccessParser {
 private:
 	AccessParser(){};		// disallow instantiation
+	static std::string getNthWord(const std::string &input, int numWordsToSkip);
 public:
 	static std::string functionNameFromPath(const std::string &accessPath);
 	static std::string variableNameFromPath(const std::string &accessPath);
+	static std::string stripLineNumbers(const std::string &accessPath);
 	static int lineNumFromPath(const std::string &accessPath);
 	static int colNumFromPath(const std::string &accessPath);
 };
