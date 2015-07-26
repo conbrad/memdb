@@ -38,20 +38,28 @@ void FunctionAnalyzer::analyzeFunctions() {
 	for(auto &functionName : functionsAccessed) {
 		cout << functionName.second.getName() << ", count: " << functionName.second.getTimesCalled() << endl;
 
-		cout << "seperate these variables into the following structs to minimize cache misses" << endl;
+		cout << "seperate these variables into the following structs to minimize cache misses\n" << endl;
 
 		int currentSize = 0;
+		int structCount = 1;
 		for(auto &variable : functionName.second.getVariablesAccessed()) {
+			if(currentSize == 0) {
+				cout << "struct " << structCount << " {" << endl;
+				structCount++;
+			}
 			if(currentSize + variable.second.getSize() < 64) {
 				currentSize += variable.second.getSize();
 			} else {
-				cout << "--------------------------------------------" << endl;
+				cout << "}" << endl;
+				structCount++;
+				cout << "struct " << structCount << " {" << endl;
+				//cout << "--------------------------------------------" << endl;
 				currentSize = 0 + variable.second.getSize();
 			}
-			cout << "\t line: " << variable.second.getLine();
-			cout << ", column: " << variable.second.getCol();
-			cout << "\t - " << variable.second.getName() << endl;
-
+			cout << "\t" << variable.second.getType() << " " << variable.second.getName();
+			cout << "\t\t //line: " << variable.second.getLine();
+			cout << ", column: " << variable.second.getCol() << endl;
+			//cout << "\t - " << variable.second.getName() << endl;
 		}
 		cout << "--------------------------------------------" << endl;
 	}

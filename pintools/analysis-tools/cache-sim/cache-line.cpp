@@ -69,11 +69,13 @@ void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string a
 
 }
 void CacheLine::recordAccess() {
-	string variableName = AccessParser::variableNameFromPath(varInfo);
+	string variableName = AccessParser::variableNameFromInfo(varInfo);
+	string type = AccessParser::typeFromInfo(varInfo);
 	string functionName = AccessParser::functionNameFromPath(accessSite);
 	int lineNumber = AccessParser::lineNumFromPath(accessSite);
 	int colNumber = AccessParser::colNumFromPath(accessSite);
-	VariableAccess variable(initAccessSize, lineNumber, colNumber, variableName);
+
+	VariableAccess variable(initAccessSize, lineNumber, colNumber, variableName, type);
 
 	Function functionAccess(functionName, accessSite);
 	functionAccess.addVariableAccess(variable);

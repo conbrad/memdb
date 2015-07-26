@@ -16,12 +16,14 @@ private:
 	int line;
 	int col;
 	std::string name;
+	std::string type;
 public:
-	VariableAccess(int size, int line, int col, std::string name);
+	VariableAccess(int size, int line, int col, std::string name, std::string type);
 	int getSize();
 	int getLine();
 	int getCol();
 	std::string getName();
+	std::string getType();
 	virtual ~VariableAccess();
 };
 

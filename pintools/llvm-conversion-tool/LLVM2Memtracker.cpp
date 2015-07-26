@@ -25,6 +25,12 @@
 #include "json11.hpp"
 #include <cassert>
 
+namespace {
+
+const int MIN_LINE_WORDS = 6;
+
+}
+
 using namespace std;
 
 namespace {
@@ -44,6 +50,8 @@ namespace {
 	const char memtrackerFile[] = "memtracker.trace";
 	const char *accessTraceFile = accessTrace.c_str();
 	ofstream memtrackerTrace (memtrackerFile);
+
+	map<string, int> noVariableName;
 
 	bool functionJsonFound = false;
 	bool sourceJsonFound = false;
@@ -98,6 +106,7 @@ vector<string> getdir (string dir);
 void checkForFiles();
 bool allFound();
 void notFoundError();
+void printUnfoundVariableLocations();
 void fini();
 
 
@@ -110,6 +119,7 @@ int main(int argc, char* argv[]) {
 	}
 	checkForFiles();
 	convertLLVMTrace();
+	printUnfoundVariableLocations();
 	fini();
     return 0;
 }
@@ -132,6 +142,7 @@ void convertLLVMTrace() {
 void parseLine(string line) {
 	istringstream lineStream(line);
 	string word;
+	vector<string> tempLine;
     if(!lineStream.eof()) {
     	lineStream >> word;
 		if (!(word.compare(LLVM_READ) == 0) && !(word.compare(LLVM_WRITE) == 0)) {
@@ -147,24 +158,38 @@ void parseLine(string line) {
     	int linePosition = 1;
     	while(lineStream) {
     		lineStream >> word;
+
     		switch(linePosition++) {
-    			case 1:	memtrackerTrace << word << " ";
+    			case 1: tempLine.push_back(word);
     				break;
-    			case 2:	memtrackerTrace << word << " ";
+    			case 2:	tempLine.push_back(word);
     				break;
-    			case 3: memtrackerTrace << word << " ";
+    			case 3: tempLine.push_back(word);
     				break;
-    			case 4: memtrackerTrace << parseFunction(word) << " ";
+    			case 4: tempLine.push_back(parseFunction(word));
     				break;
-    			case 5:	memtrackerTrace << parseAccessSource(word) << " ";
+    			case 5:	tempLine.push_back(parseAccessSource(word));
     				break;
-    			case 6:	memtrackerTrace << parseVariable(word) << " ";
+    			case 6:	tempLine.push_back(parseVariable(word));
     			    break;
-    			case 7:	memtrackerTrace << parseType(word) << " ";
+    			case 7:	tempLine.push_back(parseType(word));
     				break;
     		}
     	}
-    	memtrackerTrace << "\n";
+
+    	if(!(tempLine.at(5) == "")) {
+    		for(string word : tempLine) {
+    			memtrackerTrace << word << " ";
+    		}
+    		memtrackerTrace << "\n";
+    	}
+
+    	if(tempLine.at(5) == "") {
+    		noVariableName.insert(pair<string, int>(tempLine.at(4), 0));
+    	}
+    	if(tempLine.at(5) == " ") {
+    		noVariableName.insert(pair<string, int>(tempLine.at(4), 0));
+    	}
     }
 }
 
@@ -251,6 +276,15 @@ void checkForFiles() {
     }
 }
 
+void printUnfoundVariableLocations() {
+	cout << "unfound variables" << endl;
+	memtrackerTrace << "Unable to find the name of the variable accessed at: " << endl;
+	for(auto &it : noVariableName) {
+		memtrackerTrace << it.first << endl;
+		cout << it.first << endl;
+
+	}
+}
 vector<string> getdir (string dir) {
     DIR *dp;
     struct dirent *dirp;

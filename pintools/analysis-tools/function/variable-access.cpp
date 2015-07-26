@@ -10,11 +10,12 @@
 
 using namespace std;
 
-VariableAccess::VariableAccess(int size, int line, int col, string name) {
+VariableAccess::VariableAccess(int size, int line, int col, string name, string type) {
 	this->size = size;
 	this->line = line;
 	this->col = col;
 	this->name = name;
+	this->type = type;
 }
 int VariableAccess::getSize() {
 	return size;
@@ -28,6 +29,10 @@ int VariableAccess::getCol() {
 
 string VariableAccess::getName() {
 	return name;
+}
+
+string VariableAccess::getType() {
+	return type;
 }
 
 VariableAccess::~VariableAccess() {

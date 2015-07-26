@@ -16,7 +16,8 @@ private:
 	static std::string getNthWord(const std::string &input, int numWordsToSkip);
 public:
 	static std::string functionNameFromPath(const std::string &accessPath);
-	static std::string variableNameFromPath(const std::string &accessPath);
+	static std::string variableNameFromInfo(const std::string &varInfo);
+	static std::string typeFromInfo(const std::string &varInfo);
 	static std::string stripLineNumbers(const std::string &accessPath);
 	static int lineNumFromPath(const std::string &accessPath);
 	static int colNumFromPath(const std::string &accessPath);

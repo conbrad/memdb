@@ -18,6 +18,7 @@ const int TID = 0;
 // of functions
 #define MAX_SIZE 100
 #define EMPTY -1
+#define OPEN_LOG() if (unlikely(out == NULL)) { printf("opening file\n"); out = fopen(filename,"w"); }
 int top = EMPTY;
 int items[MAX_SIZE];
 
@@ -41,7 +42,18 @@ int empty()  {
    return top == EMPTY;
 }
 
-#define OPEN_LOG() if (unlikely(out == NULL)) { printf("opening file\n"); out = fopen(filename,"w"); }
+typedef enum
+{
+  FALSE,
+  TRUE
+} boolean;
+
+boolean debugInfoAvailable(int line, int col) {
+	if(line == -1 || col == -1) {
+		return FALSE;
+	}
+	return TRUE;
+}
 
 void logFnBegin(int functionId) {
 	push(functionId);
@@ -53,86 +65,97 @@ void logFnEnd(int functionId) {
 
 void logAlloc(void *addr, uint64_t size, int type, int file, int line, int col) {
     OPEN_LOG();
-    fprintf(out, "%p %lu %d %d %d %d\n", addr, size, type, file, line, col);
-    fflush(out);
+    if(debugInfoAvailable(line, col)) {
+    	fprintf(out, "%p %lu %d %d %d %d\n", addr, size, type, file, line, col);
+    	fflush(out);
+    }
 }
 
 void logAccessPtr(void *ptr, void *value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%lu ", sizeof(ptr));
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%lu ", sizeof(ptr));
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
 
-    fflush(out);
+        fflush(out);
+    }
 }
 
 void logAccessI8(void *ptr, uint8_t value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%d ", 1);
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%d ", 1);
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
 
-    fflush(out);
+        fflush(out);
+    }
 }
 
 void logAccessI16(void *ptr, uint16_t value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%d ", 2);
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%d ", 2);
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
 
-	//fprintf(out, "%p %hu %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
-    fflush(out);
+    	//fprintf(out, "%p %hu %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
+        fflush(out);
+    }
 }
 
 void logAccessI32(void *ptr, uint32_t value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%d ", 4);
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
-
-//	fprintf(out, "%p %u %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
-    fflush(out);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%d ", 4);
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
+        //	fprintf(out, "%p %u %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
+        fflush(out);
+    }
 }
 
 void logAccessI64(void *ptr, uint64_t value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%d ", 8);
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%d ", 8);
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
 
-//	fprintf(out, "%p %lu %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
-    fflush(out);
+    //	fprintf(out, "%p %lu %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
+        fflush(out);
+    }
 }
 
 /* =============================
@@ -159,33 +182,37 @@ void logAccessF16(void *ptr, uint16_t value, int type, int file, int line, int c
 void logAccessF32(void *ptr, float value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%d ", 4);
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%d ", 4);
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
 
-//	fprintf(out, "%p %f %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
-    fflush(out);
+    //	fprintf(out, "%p %f %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
+        fflush(out);
+    }
 }
 
 void logAccessF64(void *ptr, double value, int type, int file, int line, int col, int typeId, int varId) {
     OPEN_LOG();
 
-    fprintf(out, "%c ", type);
-    fprintf(out, "%d ", TID);
-    fprintf(out, "%p ", ptr);
-    fprintf(out, "%d ", 8);
-    fprintf(out, "%d ", peek());
-    fprintf(out, "%d:%d:%d ", file, line, col);
-    fprintf(out, "%d ", varId);
-    fprintf(out, "%d\n", typeId);
+    if(debugInfoAvailable(line, col)) {
+        fprintf(out, "%c ", type);
+        fprintf(out, "%d ", TID);
+        fprintf(out, "%p ", ptr);
+        fprintf(out, "%d ", 8);
+        fprintf(out, "%d ", peek());
+        fprintf(out, "%d:%d:%d ", file, line, col);
+        fprintf(out, "%d ", varId);
+        fprintf(out, "%d\n", typeId);
 
-//	fprintf(out, "%p %lf %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
-    fflush(out);
+    //	fprintf(out, "%p %lf %c %d %d %d %d %d\n", ptr, value, type, file, line, col, typeId, varId);
+        fflush(out);
+    }
 }
 #endif
 

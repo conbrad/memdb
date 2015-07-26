@@ -17,11 +17,22 @@ string AccessParser::functionNameFromPath(const string &accessPath) {
     return buffer;
 }
 
-string AccessParser::variableNameFromPath(const string &varInfo) {
+string AccessParser::variableNameFromInfo(const string &varInfo) {
+	string buffer;
+    stringstream ss(varInfo);
+
+    // the second word is the variable type
+    ss >> buffer;
+
+    return buffer;
+}
+
+string AccessParser::typeFromInfo(const string &varInfo) {
 	string buffer;
     stringstream ss(varInfo);
 
     // the first word is the variable name
+    ss >> buffer;
     ss >> buffer;
 
     return buffer;
