@@ -8,15 +8,16 @@
 #ifndef FUNCTION_ANALYZER_H_
 #define FUNCTION_ANALYZER_H_
 
-#include "function.h"
+#include "variable-access.h"
 
-class FunctionAnalyzer {
+class VariableAnalyzer {
 private:
-	FunctionAnalyzer(){}; 	// disallows instantiation
-	static void structify(std::pair<const std::string, Function> &function);
+	VariableAnalyzer(){}; 	// disallows instantiation
+	static void structify(std::pair<const std::string, VariableAccess> &function);
+	static std::string parseType(const std::string loggedType);
 public:
-	static void addFunction(Function function, VariableAccess variableAccess);
-	static void analyzeFunctions();
+	static void addVariable(VariableAccess variableAccess);
+	static void analyzeVariables();
 };
 
 #endif /* FUNCTION_ANALYZER_H_ */

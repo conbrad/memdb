@@ -10,60 +10,69 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 
-map<string, Function> functionsAccessed;
+map<string, VariableAccess> variables;
 const string UNKNOWN_PATH = "<unknown>";
 
-void FunctionAnalyzer::addFunction(Function function, VariableAccess variableAccess) {
-	map<string, Function>::iterator found = functionsAccessed.find(function.getPath() + function.getName());
+void VariableAnalyzer::addVariable(VariableAccess variableAccess) {
+	map<string, VariableAccess>::iterator found = variables.find(variableAccess.getPath() + variableAccess.getName());
 
-	if(function.getPath().compare(UNKNOWN_PATH) == 0) {
+	if(variableAccess.getPath().compare(UNKNOWN_PATH) == 0) {
 		return;
 	}
 
-	if(found != functionsAccessed.end()) {
+	if(found != variables.end()) {
 		found->second.called();
-		found->second.addVariableAccess(variableAccess);
 	} else {
-		function.addVariableAccess(variableAccess);
-		pair <string, Function> functionAccess (function.getPath() + function.getName(), function);
-		functionsAccessed.insert(functionAccess);
+
+		pair <string, VariableAccess> variable (variableAccess.getPath() + variableAccess.getName(), variableAccess);
+		variables.insert(variable);
 	}
 }
 
-void FunctionAnalyzer::analyzeFunctions() {
-
-	for(auto &functionAccess : functionsAccessed) {
-		structify(functionAccess);
+void VariableAnalyzer::analyzeVariables() {
+	for(auto &variableAccess : variables) {
+		structify(variableAccess);
 	}
 }
 
-void FunctionAnalyzer::structify(pair<const string, Function> &functionName) {
-	cout << functionName.second.getName() << ", count: " << functionName.second.getTimesCalled() << endl;
+void VariableAnalyzer::structify(pair<const string, VariableAccess> &variableAccess) {
+	cout << variableAccess.second.getName() << ", count: " << variableAccess.second.getTimesCalled() << endl;
 
 	cout << "Separate these variables into the following structs to minimize cache misses\n" << endl;
 
 	int currentSize = 0;
 	int structCount = 1;
-	for(auto &variable : functionName.second.getVariablesAccessed()) {
-		if(currentSize == 0) {
-			cout << "struct " << "struct" << structCount << " {" << endl;
-			structCount++;
-		}
-		if(currentSize + variable.second.getSize() < 64) {
-			currentSize += variable.second.getSize();
-		} else {
-			cout << "}\n" << endl;
-			structCount++;
-			cout << "struct " << "struct" << structCount << " {" << endl;
-			currentSize = 0 + variable.second.getSize();
-		}
-		cout << "\t" << variable.second.getType() << " " << variable.second.getName();
-		cout << "\t\t //line: " << variable.second.getLine();
-		cout << ", column: " << variable.second.getCol() << endl;
-	}
+//	for(auto &variable : functionName.second.getVariablesAccessed()) {
+//		if(currentSize == 0) {
+//			cout << "struct " << "struct" << structCount << " {" << endl;
+//			structCount++;
+//		}
+//		if(currentSize + variable.second.getSize() < 64) {
+//			currentSize += variable.second.getSize();
+//		} else {
+//			cout << "}\n" << endl;
+//			structCount++;
+//			cout << "struct " << "struct" << structCount << " {" << endl;
+//			currentSize = 0 + variable.second.getSize();
+//		}
+//		cout << "\t /* line: " << variable.second.getLine();
+//		cout << ", column: " << variable.second.getCol() << " */" << endl;
+//		cout << "\t" << parseType(variable.second.getType()) << " " << variable.second.getName() << ";" << endl;
+//	}
 	cout << "}" << endl;
 	cout << "--------------------------------------------" << endl;
+}
+
+string VariableAnalyzer::parseType(const string loggedType) {
+	if(loggedType.find("i32") != std::string::npos) {
+		return "int";
+	}
+	if(loggedType.find("float") != std::string::npos) {
+		return "float";
+	}
+	return loggedType;
 }

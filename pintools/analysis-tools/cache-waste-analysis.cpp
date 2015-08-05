@@ -144,7 +144,7 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
     cache->access(address, accessSize, accessSite, varInfo);
 }
 void CacheWasteAnalysis::analyzeFunctionCalls() {
-	FunctionAnalyzer::analyzeFunctions();
+	VariableAnalyzer::analyzeVariables();
 }
 
 void CacheWasteAnalysis::printFunctionAccessCount() {

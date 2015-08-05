@@ -10,29 +10,38 @@
 
 using namespace std;
 
-VariableAccess::VariableAccess(int size, int line, int col, string name, string type) {
-	this->size = size;
-	this->line = line;
-	this->col = col;
-	this->name = name;
-	this->type = type;
+VariableAccess::VariableAccess(VariableDetails variableDetails) {
+	this->variableDetails = variableDetails;
+	this->timesCalled = 1;
 }
 int VariableAccess::getSize() {
-	return size;
+	return variableDetails.size;
 }
 int VariableAccess::getLine() {
-	return line;
+	return variableDetails.line;
 }
 int VariableAccess::getCol() {
-	return col;
+	return variableDetails.col;
 }
 
 string VariableAccess::getName() {
-	return name;
+	return variableDetails.name;
 }
 
 string VariableAccess::getType() {
-	return type;
+	return variableDetails.type;
+}
+
+string VariableAccess::getPath() {
+	return variableDetails.path;
+}
+
+int VariableAccess::getTimesCalled() {
+	return timesCalled;
+}
+
+void VariableAccess::called() {
+	timesCalled++;
 }
 
 VariableAccess::~VariableAccess() {

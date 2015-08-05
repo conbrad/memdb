@@ -71,7 +71,7 @@ void logAlloc(void *addr, uint64_t size, int type, int file, int line, int col) 
     }
 }
 
-void logAccessPtr(void *ptr, void *value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessPtr(void *ptr, void *value, int type, int file, int line, int col, char declared, int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
@@ -88,7 +88,7 @@ void logAccessPtr(void *ptr, void *value, int type, int file, int line, int col,
     }
 }
 
-void logAccessI8(void *ptr, uint8_t value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessI8(void *ptr, uint8_t value, int type, int file, int line, int col, char declared,int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
@@ -105,7 +105,7 @@ void logAccessI8(void *ptr, uint8_t value, int type, int file, int line, int col
     }
 }
 
-void logAccessI16(void *ptr, uint16_t value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessI16(void *ptr, uint16_t value, int type, int file, int line, int col, char declared, int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
@@ -123,7 +123,7 @@ void logAccessI16(void *ptr, uint16_t value, int type, int file, int line, int c
     }
 }
 
-void logAccessI32(void *ptr, uint32_t value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessI32(void *ptr, uint32_t value, int type, int file, int line, int col, char declared, int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
@@ -140,7 +140,7 @@ void logAccessI32(void *ptr, uint32_t value, int type, int file, int line, int c
     }
 }
 
-void logAccessI64(void *ptr, uint64_t value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessI64(void *ptr, uint64_t value, int type, int file, int line, int col, char declared, int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
@@ -179,7 +179,7 @@ void logAccessF16(void *ptr, uint16_t value, int type, int file, int line, int c
 
 /* ============================= */
 
-void logAccessF32(void *ptr, float value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessF32(void *ptr, float value, int type, int file, int line, int col, char declared, int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
@@ -197,7 +197,7 @@ void logAccessF32(void *ptr, float value, int type, int file, int line, int col,
     }
 }
 
-void logAccessF64(void *ptr, double value, int type, int file, int line, int col, int typeId, int varId) {
+void logAccessF64(void *ptr, double value, int type, int file, int line, int col, char declared,int typeId, int varId) {
     OPEN_LOG();
 
     if(debugInfoAvailable(line, col)) {
