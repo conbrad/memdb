@@ -95,6 +95,18 @@ void Cache::printLineAccesses() {
 	set->getCacheLine()->printLineAccesses();
 }
 
+int Cache::getNumSets() {
+	return numSets;
+}
+
+int Cache::getAssoc() {
+	return assoc;
+}
+
+int Cache::getCacheLineSize() {
+	return lineSize;
+}
+
 void Cache::printWasteMaps() {
 	//set->getCacheLine()->printWasteMaps();
 }

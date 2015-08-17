@@ -13,11 +13,11 @@
 class VariableAnalyzer {
 private:
 	VariableAnalyzer(){}; 	// disallows instantiation
-	static void structify(std::pair<const std::string, VariableAccess> &function);
+	static void structify(int numSets, int assoc, int cacheLineSize);
 	static std::string parseType(const std::string loggedType);
 public:
 	static void addVariable(VariableAccess variableAccess);
-	static void analyzeVariables();
+	static void analyzeVariables(int numSets, int assoc, int cacheLineSize);
 };
 
 #endif /* FUNCTION_ANALYZER_H_ */

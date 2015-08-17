@@ -20,6 +20,8 @@
 #include "cache-line-access.h"
 #include "function-location.h"
 
+const float LOW_UTIL_THRESHOLD = 0.5;
+
 class CacheLine {
 
 private:

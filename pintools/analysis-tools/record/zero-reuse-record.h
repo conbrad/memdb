@@ -12,6 +12,8 @@
 #include <string>
 
 class ZeroReuseRecord: public WasteRecord {
+private:
+	int accessCount;
 public:
     ZeroReuseRecord(std::string varInfo, std::size_t address);
     ~ZeroReuseRecord();

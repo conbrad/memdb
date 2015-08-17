@@ -15,10 +15,19 @@ class WasteRecord {
 protected:
 	std::string mVarInfo;
 	std::size_t mAddress;
+	std::string variableName;
+	std::string type;
+	std::string path;
+	int accessCount;
 
 public:
 	WasteRecord();
 	WasteRecord(std::string varInfo, std::size_t address);
+	void accessed();
+	int getAccessCount();
+	std::string getVariableName();
+	std::string getType();
+	std::string getPath();
 	virtual ~WasteRecord();
 };
 

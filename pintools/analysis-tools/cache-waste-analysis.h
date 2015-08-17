@@ -32,7 +32,7 @@ public:
 	void summarizeLowUtilMap();
 	void printLineAccesses();
 	void printFunctionAccessCount();
-	void analyzeFunctionCalls();
+	void analyzeVariableAccesses();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

@@ -8,14 +8,12 @@
 #include "../main.h"
 #include "../util/map-summarizer.h"
 #include "../waste-record-collection.h"
-#include "../function/function-analyzer.h"
-#include "../function/function.h"
-#include "../function/variable-access.h"
+#include "../variable/variable-analyzer.h"
+#include "../variable/function.h"
+#include "../variable/variable-access.h"
 #include "../util/access-parser.h"
 
 using namespace std;
-
-const float LOW_UTIL_THRESHOLD = 0.5;
 
 static map<string, int> functionAccessCount;
 

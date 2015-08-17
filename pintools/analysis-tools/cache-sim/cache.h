@@ -34,5 +34,8 @@ public:
     void summarizeLowUtilMap();
     void printLineAccesses();
     void printFunctionAccessCount();
+    int getNumSets();
+    int getAssoc();
+    int getCacheLineSize();
 };
 #endif /* CACHE_H_ */

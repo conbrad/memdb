@@ -1,6 +1,7 @@
 #include "low-util-record.h"
 #include <iostream>
 #include "../main.h"
+#include "../util/access-parser.h"
 
 using namespace std;
 
@@ -8,6 +9,8 @@ LowUtilRecord::LowUtilRecord(std::string varInfo, std::size_t address, int byteU
 	    mVarInfo = varInfo;
 	    mAddress = address;
 	    mByteUseCount = byteUseCount;
+	    this->variableName = AccessParser::variableNameFromInfo(varInfo);
+	    this->type = AccessParser::typeFromInfo(varInfo);
 }
 
 std::ostream& operator<< (std::ostream& stream, const LowUtilRecord& lowReuseRecord) {

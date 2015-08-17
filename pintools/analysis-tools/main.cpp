@@ -97,7 +97,7 @@ void analyzeTrace(char* fileName) {
 		cacheAnalyzer->parseAndSimulate(line);
 	}
 	traceFile.close();
-	cacheAnalyzer->analyzeFunctionCalls();
+	cacheAnalyzer->analyzeVariableAccesses();
 //	cacheAnalyzer->printWasteMaps();
 //	cacheAnalyzer->summarizeZeroReuseMap();
 //	cacheAnalyzer->summarizeLowUtilMap();

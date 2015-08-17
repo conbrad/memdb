@@ -5,7 +5,7 @@
  *      Author: conor
  */
 
-#include "function-analyzer.h"
+#include "variable-analyzer.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -18,7 +18,9 @@ map<string, VariableAccess> variables;
 const string UNKNOWN_PATH = "<unknown>";
 
 void VariableAnalyzer::addVariable(VariableAccess variableAccess) {
-	map<string, VariableAccess>::iterator found = variables.find(variableAccess.getPath() + variableAccess.getName());
+	map<string, VariableAccess>::iterator found = variables.find(
+			variableAccess.getPath() +
+			variableAccess.getName());
 
 	if(variableAccess.getPath().compare(UNKNOWN_PATH) == 0) {
 		return;
@@ -33,19 +35,37 @@ void VariableAnalyzer::addVariable(VariableAccess variableAccess) {
 	}
 }
 
-void VariableAnalyzer::analyzeVariables() {
-	for(auto &variableAccess : variables) {
-		structify(variableAccess);
-	}
+void VariableAnalyzer::analyzeVariables(int numSets, int assoc, int cacheLineSize) {
+	structify(numSets, assoc, cacheLineSize);
 }
 
-void VariableAnalyzer::structify(pair<const string, VariableAccess> &variableAccess) {
-	cout << variableAccess.second.getName() << ", count: " << variableAccess.second.getTimesCalled() << endl;
+void VariableAnalyzer::structify(int numSets, int assoc, int cacheLineSize) {
+	//cout << variableAccess.second.getName() << ", count: " << variableAccess.second.getTimesCalled() << endl;
 
 	cout << "Separate these variables into the following structs to minimize cache misses\n" << endl;
 
 	int currentSize = 0;
 	int structCount = 1;
+
+	for(auto &variable : variables) {
+		if(currentSize == 0) {
+			cout << "struct " << "struct" << structCount << " {" << endl;
+			structCount++;
+		}
+
+		if(currentSize + variable.second.getSize() < cacheLineSize) {
+			currentSize += variable.second.getSize();
+		} else {
+			cout << "}\n" << endl;
+			structCount++;
+			cout << "struct " << "struct" << structCount << " {" << endl;
+			currentSize = 0 + variable.second.getSize();
+		}
+		cout << "\t /* line: " << variable.second.getLine();
+		cout << ", column: " << variable.second.getCol() << " */ " << endl;
+		cout << "\t" << parseType(variable.second.getType()) << " " << variable.second.getName() << ";" << endl;
+	}
+
 //	for(auto &variable : functionName.second.getVariablesAccessed()) {
 //		if(currentSize == 0) {
 //			cout << "struct " << "struct" << structCount << " {" << endl;
