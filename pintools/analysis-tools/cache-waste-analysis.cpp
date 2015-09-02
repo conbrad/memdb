@@ -165,6 +165,10 @@ void CacheWasteAnalysis::summarizeLowUtilMap() {
 	WasteRecordCollection::summarizeLowUtilMap();
 }
 
+void CacheWasteAnalysis::printMissTotal() {
+	WasteRecordCollection::printMissTotal();
+}
+
 void CacheWasteAnalysis::inputError() {
 	cout << "Error parsing input: " << word << endl;
 }

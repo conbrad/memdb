@@ -3,6 +3,7 @@
 #include "util/access-parser.h"
 #include <iostream>
 #include <algorithm>
+#include <cstdint>
 
 using namespace std;
 const string UNKNOWN_PATH = "<unknown>";
@@ -10,6 +11,7 @@ const string UNKNOWN_PATH = "<unknown>";
 namespace wasteRecordMaps {
 	map <std::string, ZeroReuseRecord> zeroReuseMap;
 	map <std::string, LowUtilRecord> lowUtilMap;
+	uint64_t cacheMisses = 0;
 	template <typename A, typename B>
 	multimap<B, A> flip_map(map<A,B> & src) {
 	    multimap<B,A> dst;
@@ -21,6 +23,10 @@ namespace wasteRecordMaps {
 	}
 }
 
+void WasteRecordCollection::cacheMiss() {
+	wasteRecordMaps::cacheMisses++;
+}
+
 void WasteRecordCollection::addZeroReuseRecord(string accessSite, string variableInfo, size_t address) {
 	if(accessSite.compare(UNKNOWN_PATH) == 0) {
 		return;
@@ -30,8 +36,7 @@ void WasteRecordCollection::addZeroReuseRecord(string accessSite, string variabl
 	map<string, ZeroReuseRecord>::iterator found = wasteRecordMaps::zeroReuseMap.find(accessSite + variableName);
 
 	if(found != wasteRecordMaps::zeroReuseMap.end()) {
-		// remove this record, should only exist in LowUtilRecord map
-		wasteRecordMaps::zeroReuseMap.erase(found);
+
 	} else {
 		ZeroReuseRecord record(variableInfo, address);
 			wasteRecordMaps::zeroReuseMap.insert(
@@ -105,4 +110,10 @@ void WasteRecordCollection::summarizeLowUtilMap() {
 //	MapSummarizer::summarizeMap(wasteRecordMaps::lowUtilMap, groupedLowUtilMap);
 //	MapSummarizer::printSummarizedMap(groupedLowUtilMap);
 }
+ void WasteRecordCollection::printMissTotal() {
+	 cout << "*************************************************" << endl;
+	 cout << "         		CACHE MISS TOTAL		           " << endl;
+	 cout << "*************************************************" << endl;
+	 cout << wasteRecordMaps::cacheMisses << endl;
 
+ }

@@ -66,23 +66,6 @@ void VariableAnalyzer::structify(int numSets, int assoc, int cacheLineSize) {
 		cout << "\t" << parseType(variable.second.getType()) << " " << variable.second.getName() << ";" << endl;
 	}
 
-//	for(auto &variable : functionName.second.getVariablesAccessed()) {
-//		if(currentSize == 0) {
-//			cout << "struct " << "struct" << structCount << " {" << endl;
-//			structCount++;
-//		}
-//		if(currentSize + variable.second.getSize() < 64) {
-//			currentSize += variable.second.getSize();
-//		} else {
-//			cout << "}\n" << endl;
-//			structCount++;
-//			cout << "struct " << "struct" << structCount << " {" << endl;
-//			currentSize = 0 + variable.second.getSize();
-//		}
-//		cout << "\t /* line: " << variable.second.getLine();
-//		cout << ", column: " << variable.second.getCol() << " */" << endl;
-//		cout << "\t" << parseType(variable.second.getType()) << " " << variable.second.getName() << ";" << endl;
-//	}
 	cout << "}" << endl;
 	cout << "--------------------------------------------" << endl;
 }

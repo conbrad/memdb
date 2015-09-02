@@ -6,6 +6,7 @@
 
 #include "cache-waste-analysis.h"
 #include "util/map-summarizer.h"
+#include "waste-record-collection.h"
 #include "main.h"
 
 using namespace std;
@@ -98,7 +99,8 @@ void analyzeTrace(char* fileName) {
 	}
 	traceFile.close();
 	cacheAnalyzer->analyzeVariableAccesses();
-//	cacheAnalyzer->printWasteMaps();
+	cacheAnalyzer->printMissTotal();
+	cacheAnalyzer->printWasteMaps();
 //	cacheAnalyzer->summarizeZeroReuseMap();
 //	cacheAnalyzer->summarizeLowUtilMap();
 //	cacheAnalyzer->printLineAccesses();

@@ -18,12 +18,13 @@ class WasteRecordCollection {
 private:
 	WasteRecordCollection(){}	// Disallow instantiation
 public:
-
+	static void cacheMiss();
 	static void addZeroReuseRecord(std::string accessSite, std::string variableInfo, std::size_t address);
 	static void addLowUtilRecord(std::string accessSite, std::string variableInfo, std::size_t address, int byteUseCount);
 	static void printWasteMaps();
 	static void summarizeZeroReuseMap();
 	static void summarizeLowUtilMap();
+	static void printMissTotal();
 };
 
 

@@ -33,6 +33,7 @@ public:
 	void printLineAccesses();
 	void printFunctionAccessCount();
 	void analyzeVariableAccesses();
+	void printMissTotal();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

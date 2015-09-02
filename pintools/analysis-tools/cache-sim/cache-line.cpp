@@ -91,14 +91,6 @@ void CacheLine::recordAccess() {
 //	FunctionAnalyzer::addFunction(functionAccess, variable);
 }
 
-void CacheLine::incrementFunctionCount(string functionName) {
-	map<string,int>::iterator functionKey = functionAccessCount.find(functionName);
-	if(functionKey != functionAccessCount.end()) {
-		functionKey->second = ++functionKey->second;
-	} else {
-		functionAccessCount.insert(make_pair(functionName, 1));
-	}
-}
 
 bool CacheLine::valid(size_t address) {
     if(address >> tagMaskBits == tag) {
@@ -144,21 +136,14 @@ void CacheLine::clearLine() {
 	bytesUsed->reset();
 }
 
-bool CacheLine::isHotFunction(string accessSite) {
-	map<string,int>::iterator functionKey = functionAccessCount.find(accessSite);
-	int count = functionKey->second;
-	if(functionKey != functionAccessCount.end()) {
-		return functionKey->second >= FUNCTION_CALL_THRESHOLD;
-	}
-	return false;
-}
-
 void CacheLine::evict() {
 
     /* We are being evicted. Print our stats, update waste maps and clear. */
     if(WANT_RAW_OUTPUT) {
 		printRawOutput();
     }
+
+	WasteRecordCollection::cacheMiss();
 
     if(timesReusedBeforeEvicted == 0) {
     	WasteRecordCollection::addZeroReuseRecord(accessSite, varInfo, address);

@@ -2,6 +2,8 @@
 #include <assert.h>
 #include <iostream>
 #include "../main.h"
+#include "../waste-record-collection.h"
+
 
 using namespace std;
 
