@@ -109,7 +109,7 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
 		switch(lineColumn++) {
 			case TID:	    // Skip the tid
 				break;
-			case ADDRESS:     // Parse the address
+			case ADDRESS:
 				address = strtol(word.c_str(), 0, 16);
 				if(errno == EINVAL || errno == ERANGE) {
 					cerr << "The following line caused error when parsing address: " << endl;
@@ -117,7 +117,7 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
 					exit(-1);
 				}
 				break;
-			case SIZE:     // Parse the size
+			case SIZE:
 				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
 				if(errno == EINVAL || errno == ERANGE) {
 					cerr << "The following line caused error when parsing access size: " << endl;
@@ -125,10 +125,12 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
 					exit(-1);
 				}
 				break;
+			// FUNCTION and ACCESS_SOURCE are one token
 			case FUNCTION:
 			case ACCESS_SOURCE:
 				accessSite += word + " ";
 				break;
+			// ALLOC_SOURCE, NAME and TYPE are one token
 			case ALLOC_SOURCE:
 			case NAME:
 			case TYPE:
@@ -144,7 +146,11 @@ void CacheWasteAnalysis::parseAndSimulate(string line) {
     cache->access(address, accessSize, accessSite, varInfo);
 }
 void CacheWasteAnalysis::analyzeVariableAccesses() {
-	VariableAnalyzer::analyzeVariables(cache->getNumSets(), cache->getAssoc(), cache->getCacheLineSize());
+	// TODO 50 is just for testing, remove and support user inputed number
+	VariableAnalyzer::cacheMissesPerVariable(50);
+	VariableAnalyzer::analyzeVariables(cache->getNumSets(),
+									   cache->getAssoc(),
+									   cache->getCacheLineSize());
 }
 
 void CacheWasteAnalysis::printFunctionAccessCount() {

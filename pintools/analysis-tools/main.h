@@ -14,6 +14,7 @@
 extern int CACHE_LINE_SIZE;
 extern int ASSOC;
 extern bool WANT_RAW_OUTPUT;
+extern char *SOCKET_PATH;
 
 #include "record/zero-reuse-record.h"
 #include "record/low-util-record.h"

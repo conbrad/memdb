@@ -45,6 +45,8 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
     	cout << "Eviction candidate is block " << minIndex << endl;
 	#endif
 
+
+    // TODO need to keep track of what variable is in which line!
     /* Evict the line if it's not empty */
     if(cacheLine[minIndex].getVirtualTimeStamp() != 0) {
     	cacheLine[minIndex].evict();
@@ -62,7 +64,8 @@ bool CacheSet::cacheHit(size_t address, unsigned short accessSize) {
 	return false;
 }
 void CacheSet::cacheMiss(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo) {
-	    // See if there is an empty cache line or find someone to evict
+	    // TODO send miss data to miss-sender
+		// See if there is an empty cache line or find someone to evict
 	    CacheLine *line = findCleanOrVictim(currentTime);
 	    line->setAndAccess(address, accessSize, accessSite, varInfo, currentTime);
 }

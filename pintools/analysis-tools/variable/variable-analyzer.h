@@ -15,9 +15,15 @@ private:
 	VariableAnalyzer(){}; 	// disallows instantiation
 	static void structify(int numSets, int assoc, int cacheLineSize);
 	static std::string parseType(const std::string loggedType);
+	static void addVariableMissCount(VariableAccess variableAccess);
+
+	// private helpers
+	static std::string getTimestamp();
+
 public:
 	static void addVariable(VariableAccess variableAccess);
 	static void analyzeVariables(int numSets, int assoc, int cacheLineSize);
+	static void cacheMissesPerVariable(int maxVariables);
 };
 
 #endif /* FUNCTION_ANALYZER_H_ */

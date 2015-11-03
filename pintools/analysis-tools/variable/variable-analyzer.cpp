@@ -7,15 +7,21 @@
 
 #include "variable-analyzer.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <map>
 #include <vector>
 #include <iomanip>
+#include <sys/time.h>
+
+#include "../util/map-utils.h"
 
 using namespace std;
 
 map<string, VariableAccess> variables;
 const string UNKNOWN_PATH = "<unknown>";
+
+map<string, int> variableAccessCounts;
 
 void VariableAnalyzer::addVariable(VariableAccess variableAccess) {
 	map<string, VariableAccess>::iterator found = variables.find(
@@ -33,8 +39,54 @@ void VariableAnalyzer::addVariable(VariableAccess variableAccess) {
 		pair <string, VariableAccess> variable (variableAccess.getPath() + variableAccess.getName(), variableAccess);
 		variables.insert(variable);
 	}
+	addVariableMissCount(variableAccess);
 }
 
+void VariableAnalyzer::addVariableMissCount(VariableAccess variableAccess) {
+	map<string, int>::iterator found = variableAccessCounts.find(
+				variableAccess.getPath() +
+				variableAccess.getName());
+
+	// we wouldn't be called if path was UNKNOWN_PATH
+	// so no guard check is needed
+
+	if(found != variableAccessCounts.end()) {
+		found->second++;
+	} else {
+		pair <string, int> variableCacheMiss (variableAccess.getPath() + variableAccess.getName(), 1);
+		variableAccessCounts.insert(variableCacheMiss);
+	}
+}
+
+void VariableAnalyzer::cacheMissesPerVariable(int maxVariables) {
+	// names and opens accessCountFile based on timestamp
+	ofstream accessCountFile;
+	accessCountFile.open(getTimestamp() + "_access_count.txt");
+	accessCountFile << "Listing of top "
+					<< maxVariables
+					<< " causing cache misses,"
+					<< " there are " << variableAccessCounts.size()
+					<< " total cache misses \n"<< endl;
+
+	int i = 0;
+	for(auto accessCount : mapUtils::flip_map(variableAccessCounts)) {
+		accessCountFile << "-------------------------------------------" << endl;
+		accessCountFile << "Variable: " << accessCount.second << "\n\n" << endl;
+		accessCountFile << "Misses: " << accessCount.first << endl;
+		accessCountFile << "------------------------------------------- \n" << endl;
+		i++;
+		if(i == maxVariables) {
+			break;
+		}
+	}
+	accessCountFile.close();
+}
+
+string VariableAnalyzer::getTimestamp() {
+	struct timeval timestamp;
+	gettimeofday(&timestamp, NULL);
+	return std::to_string(timestamp.tv_sec * 1000 + timestamp.tv_usec / 1000);
+}
 void VariableAnalyzer::analyzeVariables(int numSets, int assoc, int cacheLineSize) {
 	structify(numSets, assoc, cacheLineSize);
 }
