@@ -3,6 +3,7 @@
 #include <iostream>
 #include "../main.h"
 #include "../waste-record-collection.h"
+#include "../util/miss-sender.h"
 
 
 using namespace std;
@@ -68,6 +69,18 @@ void CacheSet::cacheMiss(size_t address, unsigned short accessSize, std::string 
 		// See if there is an empty cache line or find someone to evict
 	    CacheLine *line = findCleanOrVictim(currentTime);
 	    line->setAndAccess(address, accessSize, accessSite, varInfo, currentTime);
+
+	    map<int, string> data;
+	    data.insert(pair<int, string>(0, accessSite));
+
+	    miss_data miss {
+	    		currentTime,
+	    		1000,	// TODO make slice length configurable
+	    		metric_type::COUNT,	// TODO make type configurable
+				data
+	    	};
+
+	    MissSender::sendMiss(miss);
 }
 void CacheSet::access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo) {
     currentTime++;

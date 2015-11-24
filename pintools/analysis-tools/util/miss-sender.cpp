@@ -13,18 +13,10 @@
 #include <errno.h>
 
 using namespace std;
-int sockfd;
-struct sockaddr_un client_address;
-struct sockaddr_un server_address;
 
-// TODO make user configurable
-const char *CLIENT_PATH = "client_trace_logs";
-const char *SERVER_PATH = "server_trace_logs";
-
-
-MissSender::MissSender() {
-	initSocket();
-}
+static struct sockaddr_un client_address;
+static struct sockaddr_un server_address;
+static int sockfd;
 
 void MissSender::initSocket() {
     printf("Initializing socket");
@@ -49,7 +41,15 @@ void MissSender::initSocket() {
 }
 
 void MissSender::sendMiss(miss_data data) {
-	send(sockfd, &data, sizeof(data), 0);
+	if(!(sockfd) || sockfd < 0) {
+		initSocket();
+	}
+
+	if(data.type == metric_type::CLOSE) {
+		exitSocket();
+	} else {
+		send(sockfd, &data, sizeof(data), 0);
+	}
 }
 
 void MissSender::exitSocket() {
@@ -63,9 +63,5 @@ void MissSender::exitSocket() {
     unlink(CLIENT_PATH);
     printf("Closing socket %s...\n", SERVER_PATH);
     close(sockfd);
-}
-
-MissSender::~MissSender() {
-	exitSocket();
 }
 

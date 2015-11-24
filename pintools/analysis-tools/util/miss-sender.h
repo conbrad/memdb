@@ -9,6 +9,7 @@
 #define MISS_SENDER_H_
 
 #include <map>
+#include "json11.hpp"
 
 enum class metric_type {
 	COUNT,
@@ -23,14 +24,18 @@ struct miss_data {
 	std::map<int, std::string> data;
 };
 
+// TODO make user configurable
+static const char *CLIENT_PATH = "client_trace_logs";
+static const char *SERVER_PATH = "server_trace_logs";
+
+
 class MissSender {
 public:
-	MissSender();
-	void sendMiss(miss_data data);
-	virtual ~MissSender();
+	static void sendMiss(miss_data data);
 private:
-	void initSocket();
-	void exitSocket();
+	MissSender(){};	// disallows instantiation
+	static void initSocket();
+	static void exitSocket();
 };
 
-#endif /* ANALYSIS_TOOLS_UTIL_MISS_SENDER_H_ */
+#endif /* MISS_SENDER_H_ */

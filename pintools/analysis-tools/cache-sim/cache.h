@@ -10,6 +10,9 @@
 
 #include <string>
 #include "cache-set.h"
+#include "../util/miss-sender.h"
+
+#include <map>
 
 class Cache {
 private:
@@ -29,9 +32,6 @@ public:
     Cache(int numSets, int assoc, int lineSize);
     void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
     void printParams();
-    void printWasteMaps();
-    void summarizeZeroReuseMap();
-    void summarizeLowUtilMap();
     void printLineAccesses();
     void printFunctionAccessCount();
     int getNumSets();

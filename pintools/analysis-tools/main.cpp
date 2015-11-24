@@ -6,13 +6,15 @@
 
 #include "cache-waste-analysis.h"
 #include "util/map-summarizer.h"
+#include "util/binaryinstrumentation.h"
+#include "util/access-log-receiver.h"
 #include "waste-record-collection.h"
 #include "main.h"
 
 using namespace std;
 
 char *SOCKET_PATH = NULL;
-
+string DEFAULT_TRACE_MAP_PATH = ".";
 /* Default cache size parameters for a 2MB 4-way set associative cache */
 int NUM_SETS = 8*1024;
 int ASSOC = 4; /* 4-way set associative */
@@ -26,8 +28,8 @@ const char CACHE_LINE_SIZE_OPTION = 'l';
 const char RAW_OUTPUT_OPTION = 'r';
 const char NUM_CACHE_SET_OPTION = 's';
 
-char* parseInputOptions(int argc, char* argv[], char* fname);
-void analyzeTrace(char* fileName);
+void parseInputOptions(int argc, char* argv[], char* fname);
+void analyzeTrace();
 
 void noSocketPathError();
 void noInputFileError();
@@ -43,14 +45,14 @@ void printRawOutputDetails();
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
 
-	fileName = parseInputOptions(argc, argv, fileName);
-	analyzeTrace(fileName);
+	parseInputOptions(argc, argv, fileName);
+	analyzeTrace();
 }
 
 /* Right now we don't check that the number of sets and the cache line
  * size are a power of two, but we probably should.
  */
-char* parseInputOptions(int argc, char* argv[], char* fname) {
+void parseInputOptions(int argc, char* argv[], char* fname) {
 	char c;
 	char *nptr;
 
@@ -85,29 +87,41 @@ char* parseInputOptions(int argc, char* argv[], char* fname) {
 	if(SOCKET_PATH == NULL) {
 		noSocketPathError();
 	}
-	if (fname == NULL) {
-		noInputFileError();
-	}
-	return fname;
+//	if (fname == NULL) {
+//		noInputFileError();
+//	}
+//	return fname;
 }
 
-void analyzeTrace(char* fileName) {
+void analyzeTrace() {
 	ifstream traceFile;
 	CacheWasteAnalysis *cacheAnalyzer =
 			new CacheWasteAnalysis(NUM_SETS, ASSOC, CACHE_LINE_SIZE);
 
-//	if(WANT_RAW_OUTPUT) {
-//		printRawOutputDetails();
-//	}
-//
+	AccessLogReceiver accessLogReceiver(SOCKET_PATH);
+
+	if(WANT_RAW_OUTPUT) {
+		printRawOutputDetails();
+	}
+
+	// Receive logs over socket from instrumentation tool
+	logentry accessLog;
+	while(!accessLogReceiver.isEof()) {
+		accessLog = accessLogReceiver.readAccess();
+		if(accessLog.entry_type == LOG_ACCESS) {
+			printf("Address: %p, size: %d", accessLog.entry.access.ptr,
+					AccessLogReceiver::sizeOf(accessLog.entry.access));
+		}
+	}
+
 //	traceFile.open(fileName);
 //	if (!traceFile.is_open()) {
 //		openFileError(fileName);
 //	}
 //	string line;
-//	while (!traceFile.eof()) {
-//		getline(traceFile, line);
-//		cacheAnalyzer->parseAndSimulate(line);
+//	while (!traceFormatConverter.isEof()) {
+//		//getline(traceFile, line);
+//		cacheAnalyzer->parseAndSimulate(traceFormatConverter.nextAccess());
 //	}
 //	traceFile.close();
 //	cacheAnalyzer->analyzeVariableAccesses();

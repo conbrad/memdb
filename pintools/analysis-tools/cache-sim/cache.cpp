@@ -107,16 +107,6 @@ int Cache::getCacheLineSize() {
 	return lineSize;
 }
 
-void Cache::printWasteMaps() {
-	//set->getCacheLine()->printWasteMaps();
-}
-
-void Cache::summarizeZeroReuseMap() {
-	//set->getCacheLine()->summarizeZeroReuseMap();
-}
-void Cache::summarizeLowUtilMap() {
-	//set->getCacheLine()->summarizeLowUtilMap();
-}
 void Cache::printParams() {
     cout << "Line size      = " << lineSize << endl;
     cout << "Number of sets = " << numSets << endl;
