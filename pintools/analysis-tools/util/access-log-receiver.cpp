@@ -23,8 +23,8 @@ static std::string socket_path;
 static bool eof = false;
 
 // TODO make user configurable
-static const char *CLIENT_PATH = "client_trace_logs";
-static const char *SERVER_PATH = "server_trace_logs";
+//static const char *CLIENT_PATH = "/home/work/llvm_log_client";
+//static const char *SERVER_PATH = "server_trace_logs";
 
 AccessLogReceiver::AccessLogReceiver(string sock_path) {
 	socket_path = sock_path;
@@ -40,20 +40,15 @@ void AccessLogReceiver::initSocket() {
     if (sockfd < 0) {
         printf("Error opening socket\n");
     }
-    client_address.sun_family = AF_UNIX;
-    strcpy(client_address.sun_path, CLIENT_PATH);
+    //client_address.sun_family = AF_UNIX;
+    //strcpy(client_address.sun_path, socket_path.c_str());
     server_address.sun_family = AF_UNIX;
-    strcpy(server_address.sun_path, SERVER_PATH);
+    strcpy(server_address.sun_path, socket_path.c_str());
 
     int err;
-    err = bind(sockfd, (struct sockaddr *)&client_address, sizeof(client_address));
+    err = bind(sockfd, (struct sockaddr *)&server_address, sizeof(server_address));
     if (err < 0) {
         perror("Could not bind to socket");
-        exit(-1);
-    }
-    err = connect(sockfd, (struct sockaddr *)&server_address, sizeof(server_address));
-    if (err < 0) {
-        perror("Could not connect to socket");
         exit(-1);
     }
 
