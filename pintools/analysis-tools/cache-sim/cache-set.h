@@ -16,6 +16,7 @@
 #include "cache-line.h"
 #include "../record/zero-reuse-record.h"
 #include "../record/low-util-record.h"
+#include "../util/binaryinstrumentation.h"
 
 class CacheSet {
 private:
@@ -26,14 +27,14 @@ private:
 
 	void attemptCacheAccess(size_t address, unsigned short accessSize);
 	bool cacheHit(size_t address, unsigned short accessSize);
-	void cacheMiss(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
+	void cacheMiss(size_t address, unsigned short accessSize, logentry accessLog);
 
 public:
     CacheSet();
     CacheLine* findCleanOrVictim(size_t timeNow);
     CacheLine* getCacheLine();
     void printParams();
-    void access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo);
+    void access(size_t address, unsigned short accessSize, logentry accessLog);
     void printZeroReuseDetail();
     void zeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
     void printLowUtilDetail();

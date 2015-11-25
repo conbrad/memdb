@@ -11,6 +11,7 @@
 const int VERBOSE = 0;
 
 #include "cache-sim/cache.h"
+#include "util/binaryinstrumentation.h"
 
 class CacheWasteAnalysis {
 private:
@@ -26,7 +27,7 @@ private:
 public:
 	CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize);
 	~CacheWasteAnalysis();
-	void parseAndSimulate(std::string line);
+	void parseAndSimulate(logentry accessLog);
 	void printWasteMaps();
 	void summarizeZeroReuseMap();
 	void summarizeLowUtilMap();

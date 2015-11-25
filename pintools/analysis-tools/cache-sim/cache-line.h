@@ -14,6 +14,7 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include "../util/binaryinstrumentation.h"
 #include "../record/zero-reuse-record.h"
 #include "../record/low-util-record.h"
 #include "../main.h"
@@ -31,8 +32,8 @@ private:
     std::size_t address;				// virtual address responsible for populating this cache line */
     std::size_t tag;
     std::size_t virtualTimeStamp;		// virtual time of access
-    std::string accessSite;	    		// which code location caused that data to be brought into the cache line?
-    std::string varInfo;				// the name and the type of the corresponding variable, if we know it. */
+//    std::string accessSite;	    		// which code location caused that data to be brought into the cache line?
+//    std::string varInfo;				// the name and the type of the corresponding variable, if we know it. */
     unsigned short initAccessSize;	    // The size of the access that brought this line into cache
     unsigned short timesReusedBeforeEvicted;
     static const int FUNCTION_CALL_THRESHOLD = 0;
@@ -56,7 +57,7 @@ public:
     CacheLine();
     int access(size_t address, unsigned short accessSize, size_t timeStamp);
     bool valid(size_t address);
-    void setAndAccess(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo, size_t timeStamp);
+    void setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp);
     void evict();
     std::size_t getVirtualTimeStamp();
     void printParams();

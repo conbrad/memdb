@@ -31,6 +31,7 @@
 #include "cache-waste-analysis.h"
 #include "waste-record-collection.h"
 #include "variable/variable-analyzer.h"
+#include "util/access-log-receiver.h"
 
 /* The following data structures are used to summarize
  * the cache waste per source location.
@@ -84,66 +85,68 @@ CacheWasteAnalysis::~CacheWasteAnalysis() {
 	delete cache;
 }
 
-void CacheWasteAnalysis::parseAndSimulate(string line) {
-    istringstream str(line);
+void CacheWasteAnalysis::parseAndSimulate(logentry accessLog) {
+//    istringstream str(line);
     string word;
     size_t address;
     unsigned short accessSize;
     string accessSite;
     string varInfo;
+//
+//    /* Let's determine if this is an access record */
+//    if(str.eof()) {
+//    	return;
+//    }
+//
+//    str >> word;
+//    if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0)) {
+//    	return;
+//    }
+//
+//    int lineColumn = TID;
+//    while(!str.eof()) {
+//		str >> word;
+//
+//		switch(lineColumn++) {
+//			case TID:	    // Skip the tid
+//				break;
+//			case ADDRESS:
+//				address = strtol(word.c_str(), 0, 16);
+//				if(errno == EINVAL || errno == ERANGE) {
+//					cerr << "The following line caused error when parsing address: " << endl;
+//					cerr << line << endl;
+//					exit(-1);
+//				}
+//				break;
+//			case SIZE:
+//				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
+//				if(errno == EINVAL || errno == ERANGE) {
+//					cerr << "The following line caused error when parsing access size: " << endl;
+//					cerr << line << endl;
+//					exit(-1);
+//				}
+//				break;
+//			// FUNCTION and ACCESS_SOURCE are one token
+//			case FUNCTION:
+//			case ACCESS_SOURCE:
+//				accessSite += word + " ";
+//				break;
+//			// ALLOC_SOURCE, NAME and TYPE are one token
+//			case ALLOC_SOURCE:
+//			case NAME:
+//			case TYPE:
+//				varInfo += word + " ";
+//				break;
+//		}
+//    }
+//
+//    if(VERBOSE) {
+//    	verboseOutput(line);
+//    }
+    address = (size_t) accessLog.entry.access.ptr;
+    accessSize = (unsigned short) AccessLogReceiver::sizeOf(accessLog.entry.access);
 
-    /* Let's determine if this is an access record */
-    if(str.eof()) {
-    	return;
-    }
-
-    str >> word;
-    if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0)) {
-    	return;
-    }
-
-    int lineColumn = TID;
-    while(!str.eof()) {
-		str >> word;
-
-		switch(lineColumn++) {
-			case TID:	    // Skip the tid
-				break;
-			case ADDRESS:
-				address = strtol(word.c_str(), 0, 16);
-				if(errno == EINVAL || errno == ERANGE) {
-					cerr << "The following line caused error when parsing address: " << endl;
-					cerr << line << endl;
-					exit(-1);
-				}
-				break;
-			case SIZE:
-				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
-				if(errno == EINVAL || errno == ERANGE) {
-					cerr << "The following line caused error when parsing access size: " << endl;
-					cerr << line << endl;
-					exit(-1);
-				}
-				break;
-			// FUNCTION and ACCESS_SOURCE are one token
-			case FUNCTION:
-			case ACCESS_SOURCE:
-				accessSite += word + " ";
-				break;
-			// ALLOC_SOURCE, NAME and TYPE are one token
-			case ALLOC_SOURCE:
-			case NAME:
-			case TYPE:
-				varInfo += word + " ";
-				break;
-		}
-    }
-
-    if(VERBOSE) {
-    	verboseOutput(line);
-    }
-
-    cache->access(address, accessSize, accessSite, varInfo);
+    cache->access(address, accessSize, accessLog);
 }
 void CacheWasteAnalysis::analyzeVariableAccesses() {
 	// TODO 50 is just for testing, remove and support user inputed number

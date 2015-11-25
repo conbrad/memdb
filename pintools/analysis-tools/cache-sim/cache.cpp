@@ -16,15 +16,14 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 	tagMaskBits = log2(lineSize) + log2(numSets);	// how many bits we have to shift the address to compute the tag
 }
 
-void Cache::access(size_t address, unsigned short accessSize,
-	string accessSite, string varInfo) {
+void Cache::access(size_t address, unsigned short accessSize, logentry accessLog) {
 
     /* See if the access spans two cache lines.
      */
     int lineOffset = address % lineSize;
 
     if(lineOffset + accessSize <= lineSize) {
-    	__access(address, accessSize, accessSite, varInfo);
+    	__access(address, accessSize, accessLog);
     	return;
     }
 
@@ -37,24 +36,22 @@ void Cache::access(size_t address, unsigned short accessSize,
     uint16_t sizeOfSpillingAccess = accessSize - bytesFittingIntoFirstLine;
 
     if(VERBOSE) {
-    	verboseSpanningAccessOutput(address, accessSize, accessSite, varInfo);
+    	verboseSpanningAccessOutput(address, accessSize, accessLog);
     	verboseSplitAccessOutput(address, bytesFittingIntoFirstLine);
     	verboseSpilledAccessOutput(addressOfFirstByteNotFitting, sizeOfSpillingAccess);
     }
 
     /* Split them into two accesses */
-    __access(address, bytesFittingIntoFirstLine, accessSite, varInfo);
+    __access(address, bytesFittingIntoFirstLine, accessLog);
 
     /* We recursively call this function in case the spilling access
      * spans more than two lines. */
-    access(addressOfFirstByteNotFitting, sizeOfSpillingAccess,
-	   accessSite, varInfo);
+    access(addressOfFirstByteNotFitting, sizeOfSpillingAccess, accessLog);
 }
 void Cache::verboseSpanningAccessOutput(size_t address, unsigned short accessSize,
-		string accessSite, string varInfo) {
+		logentry accessLog) {
 	cerr << "SPANNING ACCESS: 0x" << hex << address
-			<< dec << " " << accessSize << " " << accessSite
-			<< " " << varInfo << endl;
+			<< dec << " " << accessSize << endl;
 }
 
 void Cache::verboseSplitAccessOutput(size_t address, uint16_t bytesFittingIntoFirstLine) {
@@ -71,8 +68,7 @@ void Cache::verboseSpilledAccessOutput(size_t addressOfFirstByteNotFitting, uint
 /* Here we assume that accesses would not be spanning cache
  * lines. The calling function should have taken care of this.
  */
-void Cache::__access(size_t address, unsigned short accessSize,
-	string accessSite, string varInfo) {
+void Cache::__access(size_t address, unsigned short accessSize, logentry accessLog) {
     /* Locate the set that we have to access */
     int setNum = (address >> (int)log2(lineSize)) % numSets;
 
@@ -82,7 +78,7 @@ void Cache::__access(size_t address, unsigned short accessSize,
     	verboseSetOutput(address, setNum);
     }
 
-    set[setNum].access(address, accessSize, accessSite, varInfo);
+    set[setNum].access(address, accessSize, accessLog);
 }
 
 void Cache::verboseSetOutput(size_t address, int setNum) {

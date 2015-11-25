@@ -36,8 +36,8 @@ CacheLine::CacheLine() {
 	tag = 0;
 	tagMaskBits = 0;
 	initAccessSize = 0;
-	accessSite = "";
-	varInfo = "";
+//	accessSite = "";
+//	varInfo = "";
 	timesReusedBeforeEvicted = 0;
 	virtualTimeStamp = 0;
 	bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize);
@@ -50,40 +50,40 @@ CacheLine::CacheLine() {
 void CacheLine::printFaultingAccessInfo() {
 	cout << "0x" << hex << address << dec << " "
 		 << initAccessSize << " "
-		 << accessSite << varInfo << endl;
+		 /* << accessSite << varInfo */ << endl;
 }
 
-void CacheLine::setAndAccess(size_t address, unsigned short accessSize, string accessSite, string varInfo, size_t timeStamp) {
+void CacheLine::setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp) {
     this->address = address;
     this->initAccessSize = accessSize;
     this->tag = address >> tagMaskBits;
-    this->accessSite = accessSite;
-    this->varInfo = varInfo;
+//    this->accessSite = accessSite;
+//    this->varInfo = varInfo;
     this->timesReusedBeforeEvicted = 0;
     this->bytesUsed->reset();
 
     int lineOffset = access(address, accessSize, timeStamp);
-    recordAccess();
+//    recordAccess();
 
 }
 void CacheLine::recordAccess() {
-	string variableName = AccessParser::variableNameFromInfo(varInfo);
-	string type = AccessParser::typeFromInfo(varInfo);
-	string functionName = AccessParser::functionNameFromPath(accessSite);
-	int lineNumber = AccessParser::lineNumFromPath(accessSite);
-	int colNumber = AccessParser::colNumFromPath(accessSite);
-
-	VariableAccess::VariableDetails variableDetails {
-		initAccessSize,
-		lineNumber,
-		colNumber,
-		variableName,
-		type,
-		accessSite
-	};
-
-	VariableAccess variable(variableDetails);
-	VariableAnalyzer::addVariable(variable);
+//	string variableName = AccessParser::variableNameFromInfo(varInfo);
+//	string type = AccessParser::typeFromInfo(varInfo);
+//	string functionName = AccessParser::functionNameFromPath(accessSite);
+//	int lineNumber = AccessParser::lineNumFromPath(accessSite);
+//	int colNumber = AccessParser::colNumFromPath(accessSite);
+//
+//	VariableAccess::VariableDetails variableDetails {
+//		initAccessSize,
+//		lineNumber,
+//		colNumber,
+//		variableName,
+//		type,
+//		accessSite
+//	};
+//
+//	VariableAccess variable(variableDetails);
+//	VariableAnalyzer::addVariable(variable);
 
 //	Function functionAccess(functionName, accessSite);
 //	functionAccess.addVariableAccess(variable);
@@ -130,8 +130,8 @@ int CacheLine::access(size_t address, unsigned short accessSize, size_t timeStam
 void CacheLine::clearLine() {
 	address = 0;
 	tag = 0;
-	accessSite = "";
-	varInfo = "";
+//	accessSite = "";
+//	varInfo = "";
 	timesReusedBeforeEvicted = 0;
 	bytesUsed->reset();
 }
@@ -145,13 +145,13 @@ void CacheLine::evict() {
 
 	WasteRecordCollection::cacheMiss();
 
-    if(timesReusedBeforeEvicted == 0) {
-    	WasteRecordCollection::addZeroReuseRecord(accessSite, varInfo, address);
-    }
-
-    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-    	WasteRecordCollection::addLowUtilRecord(accessSite, varInfo, address, bytesUsed->count());
-    }
+//    if(timesReusedBeforeEvicted == 0) {
+//    	WasteRecordCollection::addZeroReuseRecord(accessSite, varInfo, address);
+//    }
+//
+//    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
+//    	WasteRecordCollection::addLowUtilRecord(accessSite, varInfo, address, bytesUsed->count());
+//    }
 	clearLine();
 }
 
@@ -159,8 +159,8 @@ void CacheLine::printRawOutput() {
 	cout << left
 			<< setw(15) << bytesUsed->count()
 			<< setw(25)	<< timesReusedBeforeEvicted
-			<< setw(45) << accessSite << "<"
-			<< varInfo  << setw(25) << ">"
+//			<< setw(45) << accessSite << "<"
+//			<< varInfo  << setw(25) << ">"
 			<< setw(0)	<< "[" << "0x" << hex << address << dec << "]" << endl;
 }
 

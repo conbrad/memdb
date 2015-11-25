@@ -10,6 +10,7 @@
 
 #include <map>
 #include "json11.hpp"
+#include "binaryinstrumentation.h"
 
 enum class metric_type {
 	COUNT,
@@ -21,7 +22,7 @@ struct miss_data {
 	size_t timestamp;
 	size_t slice_length;
 	metric_type type;
-	std::map<int, std::string> data;
+	std::map<int, logentry> data;
 };
 
 // TODO make user configurable

@@ -64,14 +64,14 @@ bool CacheSet::cacheHit(size_t address, unsigned short accessSize) {
 	}
 	return false;
 }
-void CacheSet::cacheMiss(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo) {
+void CacheSet::cacheMiss(size_t address, unsigned short accessSize, logentry accessLog) {
 	    // TODO send miss data to miss-sender
 		// See if there is an empty cache line or find someone to evict
 	    CacheLine *line = findCleanOrVictim(currentTime);
-	    line->setAndAccess(address, accessSize, accessSite, varInfo, currentTime);
+	    line->setAndAccess(address, accessSize, accessLog, currentTime);
 
-	    map<int, string> data;
-	    data.insert(pair<int, string>(0, accessSite));
+	    map<int, logentry> data;
+	    data.insert(pair<int, logentry>(0, accessLog));
 
 	    miss_data miss {
 	    		currentTime,
@@ -82,11 +82,11 @@ void CacheSet::cacheMiss(size_t address, unsigned short accessSize, std::string 
 
 	    MissSender::sendMiss(miss);
 }
-void CacheSet::access(size_t address, unsigned short accessSize, std::string accessSite, std::string varInfo) {
+void CacheSet::access(size_t address, unsigned short accessSize, logentry accessLog) {
     currentTime++;
 
 	if(!cacheHit(address, accessSize)) {
-		cacheMiss(address, accessSize, accessSite, varInfo);
+		cacheMiss(address, accessSize, accessLog);
 	}
 }
 CacheLine* CacheSet::getCacheLine() {
