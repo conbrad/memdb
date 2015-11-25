@@ -110,7 +110,7 @@ void analyzeTrace() {
 		accessLog = accessLogReceiver.readAccess();
 		if(accessLog.entry_type == LOG_ACCESS) {
 			cacheAnalyzer->parseAndSimulate(accessLog);
-			printf("Address: %p, size: %d", accessLog.entry.access.ptr,
+			printf("Address: %p, size: %d\n", accessLog.entry.access.ptr,
 					AccessLogReceiver::sizeOf(accessLog.entry.access));
 		}
 	}
