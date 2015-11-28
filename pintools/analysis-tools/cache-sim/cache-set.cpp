@@ -3,8 +3,7 @@
 #include <iostream>
 #include "../main.h"
 #include "../waste-record-collection.h"
-#include "../util/miss-sender.h"
-
+#include "../util/access-sender.h"
 
 using namespace std;
 
@@ -70,23 +69,26 @@ void CacheSet::cacheMiss(size_t address, unsigned short accessSize, logentry acc
 	    CacheLine *line = findCleanOrVictim(currentTime);
 	    line->setAndAccess(address, accessSize, accessLog, currentTime);
 
-	    map<int, logentry> data;
-	    data.insert(pair<int, logentry>(0, accessLog));
-
-	    miss_data miss {
-	    		currentTime,
-	    		1000,	// TODO make slice length configurable
-	    		metric_type::COUNT,	// TODO make type configurable
-				data
-	    	};
-
-	    MissSender::sendMiss(miss);
+//	    map<int, logentry> data;
+//	    data.insert(pair<int, logentry>(0, accessLog));
+//
+//	    miss_data miss {
+//	    		currentTime,
+//	    		1000,	// TODO make slice length configurable
+//	    		metric_type::COUNT,	// TODO make type configurable
+//				data
+//	    	};
+//
+//	    MissSender::sendMiss(miss);
 }
 void CacheSet::access(size_t address, unsigned short accessSize, logentry accessLog) {
     currentTime++;
 
 	if(!cacheHit(address, accessSize)) {
 		cacheMiss(address, accessSize, accessLog);
+		AccessSender::sendMissAccess(accessLog.entry.access);
+	} else {
+		AccessSender::sendHitAccess(accessLog.entry.access);
 	}
 }
 CacheLine* CacheSet::getCacheLine() {
