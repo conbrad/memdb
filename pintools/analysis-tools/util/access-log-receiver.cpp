@@ -32,9 +32,9 @@ AccessLogReceiver::AccessLogReceiver(string sock_path) {
 }
 
 void AccessLogReceiver::initSocket() {
-	cout << "Initializing socket" << endl;
+    cout << "Initializing socket..." << endl;
 
-	unlink(socket_path.c_str());
+    unlink(socket_path.c_str());
 
     sockfd = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (sockfd < 0) {
@@ -53,6 +53,7 @@ void AccessLogReceiver::initSocket() {
     }
 
     listen(sockfd, 1);
+    cout << "Listening for trace logs..." << endl;
 }
 
 logentry AccessLogReceiver::readAccess() {
