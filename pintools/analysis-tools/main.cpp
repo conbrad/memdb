@@ -15,6 +15,7 @@ using namespace std;
 
 char *SOCKET_PATH = NULL;
 string DEFAULT_TRACE_MAP_PATH = ".";
+
 /* Default cache size parameters for a 2MB 4-way set associative cache */
 int NUM_SETS = 8*1024;
 int ASSOC = 4; /* 4-way set associative */
@@ -41,6 +42,7 @@ void userAssociativityMessage(char* nptr);
 void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
 void printRawOutputDetails();
+void printCacheStats();
 
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
@@ -89,10 +91,6 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 	    cout << "or a file path using -f to a trace file." << endl;
 	    exit(-1);
 	}
-//	if (fname == NULL) {
-//		noInputFileError();
-//	}
-//	return fname;
 }
 
 void analyzeTrace() {
@@ -108,8 +106,13 @@ void analyzeTrace() {
 
 	// Receive logs over socket from instrumentation tool
 	logentry accessLog;
-	while(!accessLogReceiver.isEof()) {
+	while(1) {
 		accessLog = accessLogReceiver.readAccess();
+
+        if(accessLogReceiver.isEof()) {
+            printCacheStats();    
+        }
+
 		if(accessLog.entry_type == LOG_ACCESS) {
 			cacheAnalyzer->parseAndSimulate(accessLog);
 			printf("Address: %p, size: %d\n", accessLog.entry.access.ptr,
@@ -137,6 +140,12 @@ void analyzeTrace() {
 
 	delete cacheAnalyzer;
 }
+
+void printCacheStats() {
+   // print cache waste stuff
+   // print number of cache lines full
+}
+
 void printRawOutputDetails() {
 	cout << left
 		 << setw(15) << "Bytes used:"

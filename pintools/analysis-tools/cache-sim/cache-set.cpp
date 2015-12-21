@@ -87,8 +87,6 @@ void CacheSet::access(size_t address, unsigned short accessSize, logentry access
 	if(!cacheHit(address, accessSize)) {
 		cacheMiss(address, accessSize, accessLog);
 		AccessSender::sendMissAccess(accessLog.entry.access);
-	} else {
-		AccessSender::sendHitAccess(accessLog.entry.access);
 	}
 }
 CacheLine* CacheSet::getCacheLine() {
