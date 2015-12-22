@@ -86,9 +86,8 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 			default:
 				optionErrorMessage();
 		}
-	if(SOCKET_PATH == NULL || fname == NULL) {
-	    cout << "Please enter a socket path using -p to receive trace logs from," << endl;
-	    cout << "or a file path using -f to a trace file." << endl;
+	if(SOCKET_PATH == NULL) {
+	    cout << "Please enter a socket path using -p to receive trace logs from." << endl;
 	    exit(-1);
 	}
 }
