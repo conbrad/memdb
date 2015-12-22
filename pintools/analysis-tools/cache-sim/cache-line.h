@@ -22,7 +22,7 @@
 #include "function-location.h"
 
 const float LOW_UTIL_THRESHOLD = 0.5;
-
+const int NULL_LOGENTRY = 0;
 class CacheLine {
 
 private:
@@ -32,8 +32,7 @@ private:
     std::size_t address;				// virtual address responsible for populating this cache line */
     std::size_t tag;
     std::size_t virtualTimeStamp;		// virtual time of access
-//    std::string accessSite;	    		// which code location caused that data to be brought into the cache line?
-//    std::string varInfo;				// the name and the type of the corresponding variable, if we know it. */
+    logentry accessLog;
     unsigned short initAccessSize;	    // The size of the access that brought this line into cache
     unsigned short timesReusedBeforeEvicted;
     static const int FUNCTION_CALL_THRESHOLD = 0;
@@ -46,11 +45,8 @@ private:
     std::bitset<MAX_LINE_SIZE> *bytesUsed;
 	void clearLine();
 	void incrementFunctionCount(std::string functionName);
-	void recordAccess();
 	void printRawOutput();
-	bool isHotFunction(const std::string accessSite);
-	void recordLineAccess(int lineOffset, const std::string& functionAndPath, const CacheLineAccess& functionLocation);
-	void recordFunctionAccess(std::vector<FunctionLocation> existingLocations, FunctionLocation functionLocation);
+    void printAmountUsed();
 
 public:
 
@@ -60,6 +56,7 @@ public:
     void setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp);
     void evict();
     std::size_t getVirtualTimeStamp();
+    std::size_t amountUsed();
     void printParams();
     void summarizeZeroReuseMap();
     void summarizeLowUtilMap();

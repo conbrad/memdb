@@ -27,40 +27,42 @@ void WasteRecordCollection::cacheMiss() {
 	wasteRecordMaps::cacheMisses++;
 }
 
-void WasteRecordCollection::addZeroReuseRecord(string accessSite, string variableInfo, size_t address) {
-	if(accessSite.compare(UNKNOWN_PATH) == 0) {
-		return;
-	}
-
-	string variableName = AccessParser::variableNameFromInfo(variableInfo);
-	map<string, ZeroReuseRecord>::iterator found = wasteRecordMaps::zeroReuseMap.find(accessSite + variableName);
-
-	if(found != wasteRecordMaps::zeroReuseMap.end()) {
-
-	} else {
-		ZeroReuseRecord record(variableInfo, address);
-			wasteRecordMaps::zeroReuseMap.insert(
-			    		pair<string, ZeroReuseRecord>
-			    		(accessSite + variableName, record));
-	}
+// TODO handle logentry keys
+void WasteRecordCollection::addZeroReuseRecord(logentry accessLog, size_t address) {
+//	if(accessSite.compare(UNKNOWN_PATH) == 0) {
+//		return;
+//	}
+//
+//	string variableName = AccessParser::variableNameFromInfo(variableInfo);
+//	map<string, ZeroReuseRecord>::iterator found = wasteRecordMaps::zeroReuseMap.find(accessSite + variableName);
+//
+//	if(found != wasteRecordMaps::zeroReuseMap.end()) {
+//        found->second.accessed();
+//	} else {
+//		ZeroReuseRecord record(variableInfo, address);
+//			wasteRecordMaps::zeroReuseMap.insert(
+//			    		pair<string, ZeroReuseRecord>
+//			    		(accessSite + variableName, record));
+//	}
 }
 
-void WasteRecordCollection::addLowUtilRecord(string accessSite, string variableInfo, size_t address, int byteUseCount) {
-	if(accessSite.compare(UNKNOWN_PATH) == 0) {
-			return;
-	}
-
-	string variableName = AccessParser::variableNameFromInfo(variableInfo);
-	map<string, LowUtilRecord>::iterator found = wasteRecordMaps::lowUtilMap.find(accessSite + variableName);
-
-	if(found != wasteRecordMaps::lowUtilMap.end()) {
-		found->second.accessed();
-	} else {
-		LowUtilRecord record(variableInfo, address, byteUseCount);
-			wasteRecordMaps::lowUtilMap.insert(
-			    		pair<string, LowUtilRecord>
-			    		(accessSite + variableName, record));
-	}
+// TODO handle logentry keys
+void WasteRecordCollection::addLowUtilRecord(logentry accessLog, size_t address, int byteUseCount) {
+//	if(accessSite.compare(UNKNOWN_PATH) == 0) {
+//			return;
+//	}
+//
+//	string variableName = AccessParser::variableNameFromInfo(variableInfo);
+//	map<string, LowUtilRecord>::iterator found = wasteRecordMaps::lowUtilMap.find(accessSite + variableName);
+//
+//	if(found != wasteRecordMaps::lowUtilMap.end()) {
+//		found->second.accessed();
+//	} else {
+//		LowUtilRecord record(variableInfo, address, byteUseCount);
+//			wasteRecordMaps::lowUtilMap.insert(
+//			    		pair<string, LowUtilRecord>
+//			    		(accessSite + variableName, record));
+//	}
 }
 
 void WasteRecordCollection::printWasteMaps() {

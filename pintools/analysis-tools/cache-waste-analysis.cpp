@@ -156,14 +156,17 @@ void CacheWasteAnalysis::analyzeVariableAccesses() {
 									   cache->getCacheLineSize());
 }
 
-void CacheWasteAnalysis::printFunctionAccessCount() {
-	cache->printFunctionAccessCount();
-}
-void CacheWasteAnalysis::printLineAccesses() {
-	cache->printLineAccesses();
-}
+//void CacheWasteAnalysis::printFunctionAccessCount() {
+//	cache->printFunctionAccessCount();
+//}
+//void CacheWasteAnalysis::printLineAccesses() {
+//	cache->printLineAccesses();
+//}
 void CacheWasteAnalysis::printWasteMaps() {
 	WasteRecordCollection::printWasteMaps();
+}
+void CacheWasteAnalysis::printFullCacheLines() {
+    cache->printFullCacheLines();
 }
 
 void CacheWasteAnalysis::summarizeZeroReuseMap() {

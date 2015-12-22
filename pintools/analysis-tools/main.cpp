@@ -42,7 +42,6 @@ void userAssociativityMessage(char* nptr);
 void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
 void printRawOutputDetails();
-void printCacheStats();
 
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
@@ -109,13 +108,15 @@ void analyzeTrace() {
 		accessLog = accessLogReceiver.readAccess();
 
         if(accessLogReceiver.isEof()) {
-            printCacheStats();    
+            cacheAnalyzer->printFullCacheLines();
+            cacheAnalyzer->summarizeZeroReuseMap();
+            cacheAnalyzer->summarizeLowUtilMap();
         }
 
 		if(accessLog.entry_type == LOG_ACCESS) {
 			cacheAnalyzer->parseAndSimulate(accessLog);
-			printf("Address: %p, size: %d\n", accessLog.entry.access.ptr,
-					AccessLogReceiver::sizeOf(accessLog.entry.access));
+			//printf("Address: %p, size: %d\n", accessLog.entry.access.ptr,
+			//		AccessLogReceiver::sizeOf(accessLog.entry.access));
 		}
 	}
 
@@ -138,11 +139,6 @@ void analyzeTrace() {
 //	cacheAnalyzer->printFunctionAccessCount();
 
 	delete cacheAnalyzer;
-}
-
-void printCacheStats() {
-   // print cache waste stuff
-   // print number of cache lines full
 }
 
 void printRawOutputDetails() {

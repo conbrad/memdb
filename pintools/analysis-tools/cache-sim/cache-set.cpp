@@ -23,7 +23,9 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
     size_t minTime = currentTime;
     size_t minIndex = -1;
 	#if VERBOSE
-    	cout << "Looking for eviction candidate at time " << timeNow << endl;
+    	cout << 
+        "Looking for eviction candidate at time " << 
+        timeNow << endl;
 	#endif
 
     /* A clean line will have a timestamp of zero,
@@ -36,7 +38,8 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
     	}
 
 		#if VERBOSE
-    		cout << "block "<< i << " ts is " << cacheLine[i].virtualTimeStamp << endl;
+    		cout << "block "<< i << " ts is " <<
+            cacheLine[i].virtualTimeStamp << endl;
 		#endif
     }
     assert(minIndex >= 0);
@@ -44,7 +47,6 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
 	#if VERBOSE
     	cout << "Eviction candidate is block " << minIndex << endl;
 	#endif
-
 
     // TODO need to keep track of what variable is in which line!
     /* Evict the line if it's not empty */

@@ -84,12 +84,12 @@ void Cache::__access(size_t address, unsigned short accessSize, logentry accessL
 void Cache::verboseSetOutput(size_t address, int setNum) {
 	cout << hex << address << dec << " maps into set #" << setNum << endl;
 }
-void Cache::printFunctionAccessCount() {
-	set->getCacheLine()->printFunctionAccessCounts();
-}
-void Cache::printLineAccesses() {
-	set->getCacheLine()->printLineAccesses();
-}
+//void Cache::printFunctionAccessCount() {
+//	set->getCacheLine()->printFunctionAccessCounts();
+//}
+//void Cache::printLineAccesses() {
+//	set->getCacheLine()->printLineAccesses();
+//}
 
 int Cache::getNumSets() {
 	return numSets;
@@ -101,6 +101,13 @@ int Cache::getAssoc() {
 
 int Cache::getCacheLineSize() {
 	return lineSize;
+}
+
+void Cache::printFullCacheLines() {
+    cout << "Full cache lines: " << endl;
+   for(int i = 0; i < numSets; i++) {
+        
+   }
 }
 
 void Cache::printParams() {

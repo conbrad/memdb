@@ -31,6 +31,7 @@ public:
 	void printWasteMaps();
 	void summarizeZeroReuseMap();
 	void summarizeLowUtilMap();
+    void printFullCacheLines();
 	void printLineAccesses();
 	void printFunctionAccessCount();
 	void analyzeVariableAccesses();

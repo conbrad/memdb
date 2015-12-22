@@ -35,10 +35,9 @@ CacheLine::CacheLine() {
 	address = 0;
 	tag = 0;
 	tagMaskBits = 0;
+    accessLog = { NULL_LOGENTRY };
 	initAccessSize = 0;
-//	accessSite = "";
-//	varInfo = "";
-	timesReusedBeforeEvicted = 0;
+    timesReusedBeforeEvicted = 0;
 	virtualTimeStamp = 0;
 	bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize);
 	bytesUsed->reset();
@@ -57,38 +56,19 @@ void CacheLine::setAndAccess(size_t address, unsigned short accessSize, logentry
     this->address = address;
     this->initAccessSize = accessSize;
     this->tag = address >> tagMaskBits;
-//    this->accessSite = accessSite;
-//    this->varInfo = varInfo;
+    this->accessLog = accessLog;
     this->timesReusedBeforeEvicted = 0;
     this->bytesUsed->reset();
 
     int lineOffset = access(address, accessSize, timeStamp);
-//    recordAccess();
-
 }
-void CacheLine::recordAccess() {
-//	string variableName = AccessParser::variableNameFromInfo(varInfo);
-//	string type = AccessParser::typeFromInfo(varInfo);
-//	string functionName = AccessParser::functionNameFromPath(accessSite);
-//	int lineNumber = AccessParser::lineNumFromPath(accessSite);
-//	int colNumber = AccessParser::colNumFromPath(accessSite);
-//
-//	VariableAccess::VariableDetails variableDetails {
-//		initAccessSize,
-//		lineNumber,
-//		colNumber,
-//		variableName,
-//		type,
-//		accessSite
-//	};
-//
-//	VariableAccess variable(variableDetails);
-//	VariableAnalyzer::addVariable(variable);
 
-//	Function functionAccess(functionName, accessSite);
-//	functionAccess.addVariableAccess(variable);
-//
-//	FunctionAnalyzer::addFunction(functionAccess, variable);
+void CacheLine::printAmountUsed() {
+    cout << amountUsed() / MAX_LINE_SIZE << endl;
+}
+
+size_t CacheLine::amountUsed() {
+    return bytesUsed->count();
 }
 
 
@@ -130,9 +110,8 @@ int CacheLine::access(size_t address, unsigned short accessSize, size_t timeStam
 void CacheLine::clearLine() {
 	address = 0;
 	tag = 0;
-//	accessSite = "";
-//	varInfo = "";
-	timesReusedBeforeEvicted = 0;
+    accessLog = { NULL_LOGENTRY };
+    timesReusedBeforeEvicted = 0;
 	bytesUsed->reset();
 }
 
@@ -143,15 +122,15 @@ void CacheLine::evict() {
 		printRawOutput();
     }
 
-	WasteRecordCollection::cacheMiss();
+    if(timesReusedBeforeEvicted == 0) {
+    	WasteRecordCollection::
+            addZeroReuseRecord(accessLog, address);
+    }
 
-//    if(timesReusedBeforeEvicted == 0) {
-//    	WasteRecordCollection::addZeroReuseRecord(accessSite, varInfo, address);
-//    }
-//
-//    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-//    	WasteRecordCollection::addLowUtilRecord(accessSite, varInfo, address, bytesUsed->count());
-//    }
+    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
+    	WasteRecordCollection::
+        addLowUtilRecord(accessLog, address, bytesUsed->count());
+    }
 	clearLine();
 }
 
@@ -164,36 +143,6 @@ void CacheLine::printRawOutput() {
 			<< setw(0)	<< "[" << "0x" << hex << address << dec << "]" << endl;
 }
 
-void CacheLine::printLineAccesses() {
-	cout << "*************************************************" << endl;
-	cout << "              CACHE LINE ACCESSES             	  " << endl;
-	cout << "*************************************************" << endl;
-	cout << "# Function calls >=" << FUNCTION_CALL_THRESHOLD << endl;
-//	for (auto lineIt = lineAccesses.begin(); lineIt != lineAccesses.end(); lineIt++) {
-//		cout << "Line offset: " << lineIt->first << endl;
-//	    for (auto &cacheLineAccess : lineIt->second) {
-//	    	if(isHotFunction(cacheLineAccess.accessSite)) {
-//	    		cout 	<< "Function: " << cacheLineAccess.accessSite
-//	    				<< ", access size: " << cacheLineAccess.accessSize
-//	    				<< endl;
-//	    	}
-//	    }
-//	}
-}
-
-void CacheLine::printFunctionAccessCounts() {
-	cout << "*************************************************" << endl;
-	cout << "              FUNCTION ACCESS COUNTS             " << endl;
-	cout << "                 <Name>, <Count>                 " << endl;
-	cout << "*************************************************" << endl;
-
-	for(auto &functionAccess : functionAccessCount) {
-		cout 	<< AccessParser::functionNameFromPath(functionAccess.first.c_str())
-				<< ", " << functionAccess.second
-				<< endl;
-	}
-	cout << endl;
-}
 size_t CacheLine::getVirtualTimeStamp() {
 	return virtualTimeStamp;
 }

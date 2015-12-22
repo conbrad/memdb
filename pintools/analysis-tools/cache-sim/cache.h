@@ -33,6 +33,7 @@ public:
     Cache(int numSets, int assoc, int lineSize);
     void access(size_t address, unsigned short accessSize, logentry accessLog);
     void printParams();
+    void printFullCacheLines();
     void printLineAccesses();
     void printFunctionAccessCount();
     int getNumSets();
