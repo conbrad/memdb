@@ -81,10 +81,6 @@ CacheWasteAnalysis::CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize
     cache->printParams();
 }
 
-CacheWasteAnalysis::~CacheWasteAnalysis() {
-	delete cache;
-}
-
 void CacheWasteAnalysis::parseAndSimulate(logentry accessLog) {
 //    istringstream str(line);
     string word;
@@ -193,9 +189,3 @@ void CacheWasteAnalysis::verboseOutput(const string& line) {
 	cout << accessSite << endl;
 	cout << varInfo << endl;
 }
-
-
-
-
-
-

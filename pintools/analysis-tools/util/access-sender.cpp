@@ -38,7 +38,7 @@ void AccessSender::initSocket() {
 }
 
 // uses col field in entry.access to describe a hit access
-void AccessSender::sendHitAccess(accesslog access) {
+void AccessSender::sendHit(accesslog access) {
 	if(!(sockfd) || sockfd < 0) {
 		initSocket();
 	}
@@ -47,7 +47,7 @@ void AccessSender::sendHitAccess(accesslog access) {
 }
 
 // uses col field in entry.access to describe a miss acess
-void AccessSender::sendMissAccess(accesslog access) {
+void AccessSender::sendMiss(accesslog access) {
 	if(!(sockfd) || sockfd < 0) {
 			initSocket();
 	}

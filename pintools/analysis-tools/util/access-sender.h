@@ -16,8 +16,8 @@ private:
 	static void initSocket();
 	static void exitSocket();
 public:
-	static void sendHitAccess(accesslog access);
-	static void sendMissAccess(accesslog access);
+	static void sendHit(accesslog access);
+	static void sendMiss(accesslog access);
 };
 
 #endif /* ACCESS_SENDER_H_ */

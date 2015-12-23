@@ -10,7 +10,7 @@
 
 #include <string>
 #include "cache-set.h"
-#include "../util/miss-sender.h"
+//#include "../util/miss-sender.h"
 #include "../util/binaryinstrumentation.h"
 
 #include <map>

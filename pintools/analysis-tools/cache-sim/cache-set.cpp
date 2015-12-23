@@ -4,6 +4,7 @@
 #include "../main.h"
 #include "../waste-record-collection.h"
 #include "../util/access-sender.h"
+#include "../util/binaryinstrumentation.h"
 
 using namespace std;
 
@@ -66,29 +67,31 @@ bool CacheSet::cacheHit(size_t address, unsigned short accessSize) {
 	return false;
 }
 void CacheSet::cacheMiss(size_t address, unsigned short accessSize, logentry accessLog) {
-	    // TODO send miss data to miss-sender
-		// See if there is an empty cache line or find someone to evict
-	    CacheLine *line = findCleanOrVictim(currentTime);
-	    line->setAndAccess(address, accessSize, accessLog, currentTime);
+	// TODO send miss data to miss-sender
+	// See if there is an empty cache line or find someone to evict
+	CacheLine *line = findCleanOrVictim(currentTime);
+	line->setAndAccess(address, accessSize, accessLog, currentTime);
 
-//	    map<int, logentry> data;
-//	    data.insert(pair<int, logentry>(0, accessLog));
-//
-//	    miss_data miss {
-//	    		currentTime,
-//	    		1000,	// TODO make slice length configurable
-//	    		metric_type::COUNT,	// TODO make type configurable
-//				data
-//	    	};
-//
-//	    MissSender::sendMiss(miss);
+	   // map<int, logentry> data;
+	   // data.insert(pair<int, logentry>(0, accessLog));
+
+	   // miss_data miss {
+	   // 		currentTime,
+	   // 		1000,	// TODO make slice length configurable
+	   // 		metric_type::COUNT,	// TODO make type configurable
+	   // 		data
+	   // };
+    
+     AccessSender::sendMiss(accessLog.entry.access);
 }
 void CacheSet::access(size_t address, unsigned short accessSize, logentry accessLog) {
     currentTime++;
 
 	if(!cacheHit(address, accessSize)) {
 		cacheMiss(address, accessSize, accessLog);
-	}
+	} else {
+        AccessSender::sendHit(accessLog.entry.access);
+    }
 }
 CacheLine* CacheSet::getCacheLine() {
 	return cacheLine;
