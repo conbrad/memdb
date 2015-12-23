@@ -21,6 +21,7 @@ int NUM_SETS = 8*1024;
 int ASSOC = 4; /* 4-way set associative */
 int CACHE_LINE_SIZE = 64;  /* in bytes */
 bool WANT_RAW_OUTPUT = false;
+bool EXIT_ON_EOF = false; /* exit once exit log is received */
 
 const char SOCKET_PATH_OPTION = 'p';
 const char ASSOCIATIVITY_OPTION = 'a';
@@ -28,6 +29,7 @@ const char FILENAME_OPTION = 'f';
 const char CACHE_LINE_SIZE_OPTION = 'l';
 const char RAW_OUTPUT_OPTION = 'r';
 const char NUM_CACHE_SET_OPTION = 's';
+const char EXIT_OPTION = 'e';
 
 void parseInputOptions(int argc, char* argv[], char* fname);
 void analyzeTrace();
@@ -57,7 +59,7 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 	char c;
 	char *nptr;
 
-	while ((c = getopt(argc, argv, "a:f:l:p:s:r")) != -1)
+	while ((c = getopt(argc, argv, "a:f:l:p:s:r:e")) != -1)
 		switch (c) {
 			case SOCKET_PATH_OPTION:
 				SOCKET_PATH = optarg;
@@ -81,6 +83,9 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 				NUM_SETS = (int) (strtol(optarg, &nptr, 10));
 				userCacheSetMessage(nptr);
 				break;
+            case EXIT_OPTION:
+                EXIT_ON_EOF = true;
+                break;
 			case '?':
 			default:
 				optionErrorMessage();
@@ -111,6 +116,10 @@ void analyzeTrace() {
             cacheAnalyzer->printFullCacheLines();
             cacheAnalyzer->summarizeZeroReuseMap();
             cacheAnalyzer->summarizeLowUtilMap();
+
+            if(EXIT_ON_EOF) {
+                break;
+            }
         }
 
 		if(accessLog.entry_type == LOG_ACCESS) {
