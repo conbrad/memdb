@@ -15,7 +15,7 @@
 
 static int sockfd;
 static struct sockaddr_in spark_server;
-static const char *spark_address = "127.0.0.1.";
+static const char *spark_address = "127.0.0.1";
 static uint16_t spark_port = 12345;
 static const unsigned short HIT = 1;
 static const unsigned short MISS = 0;
@@ -23,7 +23,7 @@ static const unsigned short MISS = 0;
 void AccessSender::initSocket() {
 	sockfd = socket(AF_INET , SOCK_STREAM , 0);
 	if (sockfd < 0) {
-		printf("Could not create socket");
+		printf("Could not create socket\n");
 	}
 
 	spark_server.sin_addr.s_addr = inet_addr(spark_address);
@@ -33,7 +33,9 @@ void AccessSender::initSocket() {
 	int err;
     err = connect(sockfd, (struct sockaddr *)&spark_server, sizeof(spark_server));
     if (err < 0) {
-        perror("Could not connect to spark server");
+        perror("Could not connect to spark server\n");
+    } else {
+        printf("Connected to spark server at %s, port: %d\n", spark_address, spark_port);
     }
 }
 
@@ -43,7 +45,11 @@ void AccessSender::sendHit(accesslog access) {
 		initSocket();
 	}
 	access.col = HIT;
-	send(sockfd, &access, sizeof(access), 0);
+    //printf("About to sent a hit\n");
+
+	if(send(sockfd, &access, sizeof(access), 0) < 0) {
+        printf("Send failed\n");
+    }
 }
 
 // uses col field in entry.access to describe a miss acess
@@ -52,11 +58,15 @@ void AccessSender::sendMiss(accesslog access) {
 			initSocket();
 	}
 	access.col = MISS;
-	send(sockfd, &access, sizeof(access), 0);
+    //printf("Bout to send a miss\n");
+    
+    if(send(sockfd, &access, sizeof(access), 0) < 0) {
+        printf("Send failed\n");
+    }
 }
 
 void AccessSender::exitSocket() {
 	// TODO need to send spark server eof?
-	printf("Closing connection to spark server");
+	printf("Closing connection to spark server\n");
 	close(sockfd);
 }

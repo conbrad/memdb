@@ -1,11 +1,20 @@
+#include <csignal>
+#include <iostream>
 #include "test-server.h"
 
-int main(int argc, char *argv[]) {
-    TestServer *testServer = new TestServer();
-    
-    testServer->initSocket();
-    testServer->listenForLogs();
-    testServer->exitSocket();
+using namespace std;
 
-    delete testServer;
+TestServer testServer;
+
+void signalHandler(int sigNum) {
+    cout << "Closing socket..." << endl;
+    testServer.exitSocket();
+
+    exit(sigNum);
+}
+
+int main(int argc, char *argv[]) {
+    signal(SIGINT, signalHandler);
+    testServer.initSocket();
+    testServer.listenForLogs();
 }

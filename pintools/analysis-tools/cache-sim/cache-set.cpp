@@ -81,7 +81,6 @@ void CacheSet::cacheMiss(size_t address, unsigned short accessSize, logentry acc
 	   // 		metric_type::COUNT,	// TODO make type configurable
 	   // 		data
 	   // };
-    
      AccessSender::sendMiss(accessLog.entry.access);
 }
 void CacheSet::access(size_t address, unsigned short accessSize, logentry accessLog) {
