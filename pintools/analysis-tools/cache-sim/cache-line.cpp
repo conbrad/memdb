@@ -100,7 +100,8 @@ int CacheLine::access(size_t address, unsigned short accessSize, size_t timeStam
     if(bytesUsed->test(lineOffset)) {
     	timesReusedBeforeEvicted++;
     } else {
-    	for(int i = lineOffset; i < min(lineOffset + accessSize, lineSize); i++) {
+        int byteThreshold = min(lineOffset + accessSize, lineSize);
+    	for(int i = lineOffset; i < byteThreshold; i++) {
     		bytesUsed->set(i);
     	}
     }

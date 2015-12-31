@@ -22,6 +22,7 @@ int ASSOC = 4; /* 4-way set associative */
 int CACHE_LINE_SIZE = 64;  /* in bytes */
 bool WANT_RAW_OUTPUT = false;
 bool EXIT_ON_EOF = false; /* exit once exit log is received */
+bool SPARK_OFF = false; /* sends to spark server by default */
 
 const char SOCKET_PATH_OPTION = 'p';
 const char ASSOCIATIVITY_OPTION = 'a';
@@ -30,6 +31,7 @@ const char CACHE_LINE_SIZE_OPTION = 'l';
 const char RAW_OUTPUT_OPTION = 'r';
 const char NUM_CACHE_SET_OPTION = 's';
 const char EXIT_OPTION = 'e';
+const char SPARK_OFF_OPTION = 'o';
 
 void parseInputOptions(int argc, char* argv[], char* fname);
 void analyzeTrace();
@@ -59,7 +61,7 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 	char c;
 	char *nptr;
 
-	while ((c = getopt(argc, argv, "a:f:l:p:s:r:e")) != -1)
+	while ((c = getopt(argc, argv, "a:f:l:p:s:r:e:o")) != -1)
 		switch (c) {
 			case SOCKET_PATH_OPTION:
 				SOCKET_PATH = optarg;
@@ -85,6 +87,9 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 				break;
             case EXIT_OPTION:
                 EXIT_ON_EOF = true;
+                break;
+            case SPARK_OFF_OPTION:
+                SPARK_OFF = true;
                 break;
 			case '?':
 			default:
