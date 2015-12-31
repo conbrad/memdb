@@ -2,6 +2,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <iomanip>
+#include <csignal>
 #include "main.h"
 
 #include "cache-waste-analysis.h"
@@ -13,6 +14,7 @@
 
 using namespace std;
 
+CacheWasteAnalysis *cacheAnalyzer;
 char *SOCKET_PATH = NULL;
 string DEFAULT_TRACE_MAP_PATH = ".";
 
@@ -46,10 +48,20 @@ void userAssociativityMessage(char* nptr);
 void userLineSizeMessage(char* nptr);
 void userCacheSetMessage(char* nptr);
 void printRawOutputDetails();
+void printStats();
+
+void signalHandler(int sigNum) {
+    cout << "Printing stats..." << endl;
+    printStats();
+
+    delete cacheAnalyzer;
+    exit(sigNum);
+}
 
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
 
+    signal(SIGINT, signalHandler);
 	parseInputOptions(argc, argv, fileName);
 	analyzeTrace();
 }
@@ -103,8 +115,7 @@ void parseInputOptions(int argc, char* argv[], char* fname) {
 
 void analyzeTrace() {
 	ifstream traceFile;
-	CacheWasteAnalysis *cacheAnalyzer =
-			new CacheWasteAnalysis(NUM_SETS, ASSOC, CACHE_LINE_SIZE);
+	cacheAnalyzer =	new CacheWasteAnalysis(NUM_SETS, ASSOC, CACHE_LINE_SIZE);
 
 	AccessLogReceiver accessLogReceiver(SOCKET_PATH);
 
@@ -118,9 +129,7 @@ void analyzeTrace() {
 		accessLog = accessLogReceiver.readAccess();
 
         if(accessLogReceiver.isEof()) {
-            cacheAnalyzer->printFullCacheLines();
-            cacheAnalyzer->summarizeZeroReuseMap();
-            cacheAnalyzer->summarizeLowUtilMap();
+            printStats();
 
             if(EXIT_ON_EOF) {
                 break;
@@ -153,6 +162,12 @@ void analyzeTrace() {
 //	cacheAnalyzer->printFunctionAccessCount();
 
 	delete cacheAnalyzer;
+}
+
+void printStats() {
+    cacheAnalyzer->printFullCacheLines();
+    cacheAnalyzer->summarizeZeroReuseMap();
+    cacheAnalyzer->summarizeLowUtilMap();
 }
 
 void printRawOutputDetails() {

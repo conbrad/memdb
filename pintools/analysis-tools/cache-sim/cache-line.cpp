@@ -28,6 +28,8 @@ CacheLine::CacheLine() {
      * allow to allocate an array and
      * initialize all members with the
      * same constructor at the same time.
+     *
+     * TODO Builder pattern for complex parameters
     */
 
     /* Size is given in bytes */
@@ -48,8 +50,7 @@ CacheLine::CacheLine() {
  * brought into the cache */
 void CacheLine::printFaultingAccessInfo() {
 	cout << "0x" << hex << address << dec << " "
-		 << initAccessSize << " "
-		 /* << accessSite << varInfo */ << endl;
+		 << initAccessSize << " ";
 }
 
 void CacheLine::setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp) {
@@ -130,7 +131,7 @@ void CacheLine::evict() {
 
     if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
     	WasteRecordCollection::
-        addLowUtilRecord(accessLog, address, bytesUsed->count());
+            addLowUtilRecord(accessLog, address, bytesUsed->count());
     }
 	clearLine();
 }
@@ -139,14 +140,13 @@ void CacheLine::printRawOutput() {
 	cout << left
 			<< setw(15) << bytesUsed->count()
 			<< setw(25)	<< timesReusedBeforeEvicted
-//			<< setw(45) << accessSite << "<"
-//			<< varInfo  << setw(25) << ">"
 			<< setw(0)	<< "[" << "0x" << hex << address << dec << "]" << endl;
 }
 
 size_t CacheLine::getVirtualTimeStamp() {
 	return virtualTimeStamp;
 }
+
 void CacheLine::printParams() {
     cout << "Line size = " << lineSize << endl;
 }
