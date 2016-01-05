@@ -1,6 +1,7 @@
 #include "cache-line.h"
 #include <bitset>
 #include <iostream>
+#include <sstream>
 #include <assert.h>
 #include <iomanip>
 #include <string>
@@ -31,6 +32,7 @@ CacheLine::CacheLine() {
      *
      * TODO Builder pattern for complex parameters
     */
+
 
     /* Size is given in bytes */
 	lineSize = CACHE_LINE_SIZE;
@@ -64,8 +66,15 @@ void CacheLine::setAndAccess(size_t address, unsigned short accessSize, logentry
     int lineOffset = access(address, accessSize, timeStamp);
 }
 
-void CacheLine::printAmountUsed() {
-    cout << amountUsed() / MAX_LINE_SIZE << endl;
+string CacheLine::printAmountUsed() {
+    std::stringstream usedRatio;
+    
+    usedRatio << bytesUsed->count();
+    usedRatio << "/";
+    usedRatio << MAX_LINE_SIZE;
+    usedRatio << "\n";
+
+    return usedRatio.str();
 }
 
 size_t CacheLine::amountUsed() {
@@ -134,6 +143,14 @@ void CacheLine::evict() {
             addLowUtilRecord(accessLog, address, bytesUsed->count());
     }
 	clearLine();
+}
+
+int CacheLine::getSize() {
+    return lineSize;
+}
+
+int CacheLine::unused() {
+    return lineSize - bytesUsed->count();
 }
 
 void CacheLine::printRawOutput() {

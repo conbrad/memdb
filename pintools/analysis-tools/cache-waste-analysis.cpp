@@ -181,6 +181,21 @@ void CacheWasteAnalysis::printMissTotal() {
 	WasteRecordCollection::printMissTotal();
 }
 
+void CacheWasteAnalysis::printNumAccesses() {
+    cout << "-----------------" << endl;
+    cout << "Number of Accesses" << endl;
+    cout << cache->getNumAccesses() << endl;
+    cout << "-----------------" << endl;
+}
+
+void CacheWasteAnalysis::printTotalBytes() {
+    cout << cache->getTotalBytesBroughtIn() << endl;
+}
+
+void CacheWasteAnalysis::printWastedBytes() {
+    cout << cache->getTotalBytesWasted() << endl;
+}
+
 void CacheWasteAnalysis::inputError() {
 	cout << "Error parsing input: " << word << endl;
 }

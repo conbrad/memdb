@@ -23,6 +23,8 @@ private:
 	int associativity;
 	int cacheLineSize;
     size_t currentTime;	// a virtual time ticks every time someone accesses this cache set
+    unsigned int bytesBroughtIn;
+    unsigned int bytesWasted;
 	CacheLine *cacheLine;
 
 	void attemptCacheAccess(size_t address, unsigned short accessSize);
@@ -39,6 +41,9 @@ public:
     void zeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
     void printLowUtilDetail();
     void lowUtilSummary(std::multimap <int, std::tuple<std::string, std::vector<LowUtilRecord>>> groupedLowUtilMap);
+    std::string printCacheLineUsage();
+    unsigned int getBytesBroughtIn();
+    unsigned int getBytesWasted();
 };
 
 #endif /* CACHE_SET_H_ */

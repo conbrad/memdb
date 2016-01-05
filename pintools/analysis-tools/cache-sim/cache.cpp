@@ -2,6 +2,7 @@
 #include <ctgmath>
 #include <assert.h>
 #include <iostream>
+#include <fstream>
 
 #include "../main.h"
 #include "../cache-waste-analysis.h"
@@ -13,11 +14,14 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 	this->assoc = assoc;
 	this->lineSize = lineSize;
 	this->set = new CacheSet[numSets];
+    totalBytesBroughtIn = 0;
+    totalBytesWasted = 0;
+    numAccesses = 0;
 	tagMaskBits = log2(lineSize) + log2(numSets);	// how many bits we have to shift the address to compute the tag
 }
 
 void Cache::access(size_t address, unsigned short accessSize, logentry accessLog) {
-
+    numAccesses++;
     /* See if the access spans two cache lines.
      */
     int lineOffset = address % lineSize;
@@ -97,11 +101,37 @@ int Cache::getCacheLineSize() {
 	return lineSize;
 }
 
+unsigned int Cache::getNumAccesses() {
+    return numAccesses;
+}
+
+unsigned int Cache::getTotalBytesBroughtIn() {
+    totalBytesBroughtIn = 0;
+    for (int i = 0; i < assoc; i++) {
+        totalBytesBroughtIn += set[i].getBytesBroughtIn();
+    }
+    return totalBytesBroughtIn;
+}
+
+unsigned int Cache::getTotalBytesWasted() {
+    totalBytesWasted = 0; 
+    for (int i = 0; i < assoc; i++) {
+        totalBytesWasted += set[i].getBytesWasted();
+    }
+    return totalBytesWasted;
+}
+
 void Cache::printFullCacheLines() {
-    cout << "Full cache lines: " << endl;
-   for(int i = 0; i < numSets; i++) {
-        
-   }
+    ofstream cacheLineUsage;
+    cacheLineUsage.open("cache-line-usage.txt");
+    cacheLineUsage << "Cache line usage: " << endl;
+    for (int i = 0; i < numSets; i++) {
+        cacheLineUsage << "Set: " << i << endl;
+        cacheLineUsage << "----------" << endl;
+        cacheLineUsage << set[i].printCacheLineUsage();
+        cacheLineUsage << "----------" << endl;
+    }
+    cacheLineUsage.close();
 }
 
 void Cache::printParams() {

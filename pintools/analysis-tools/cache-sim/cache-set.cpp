@@ -12,6 +12,8 @@ CacheSet::CacheSet() {
 	    associativity = ASSOC;
 	    cacheLineSize = CACHE_LINE_SIZE;
 	    currentTime = 0;
+        bytesBroughtIn = 0;
+        bytesWasted = 0;    
 	    cacheLine = new CacheLine[associativity];
 }
 
@@ -48,12 +50,14 @@ CacheLine* CacheSet::findCleanOrVictim(size_t timeNow) {
 	#if VERBOSE
     	cout << "Eviction candidate is block " << minIndex << endl;
 	#endif
-
-    // TODO need to keep track of what variable is in which line!
+    
     /* Evict the line if it's not empty */
     if(cacheLine[minIndex].getVirtualTimeStamp() != 0) {
-    	cacheLine[minIndex].evict();
+        bytesWasted += cacheLine[minIndex].unused();
+        cacheLine[minIndex].evict();
     }
+    bytesBroughtIn += cacheLine[minIndex].getSize();
+
     return &(cacheLine[minIndex]);
 }
 
@@ -86,6 +90,23 @@ void CacheSet::access(size_t address, unsigned short accessSize, logentry access
         }
     }
 }
+
+string CacheSet::printCacheLineUsage() {
+    string cacheUsages;
+    for (int i = 0; i < associativity; i++) {
+        cacheUsages.append(cacheLine[i].printAmountUsed());
+    }
+    return cacheUsages;
+}
+
 CacheLine* CacheSet::getCacheLine() {
 	return cacheLine;
+}
+
+unsigned int CacheSet::getBytesBroughtIn() {
+    return bytesBroughtIn;
+}
+
+unsigned int CacheSet::getBytesWasted() {
+    return bytesWasted;
 }

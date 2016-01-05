@@ -62,4 +62,23 @@ typedef struct _logentry {
     } entry;
 } logentry;
 
+// '<' operator defined so we can use
+// logentry as a key in the waste record maps
+
+//bool operator < (const logentry &l, const logentry &r) { 
+//// if access log, use varId, 
+//// if alloc log use address? or line, col?
+//    if(l.entry_type != LOG_ACCESS) {
+//        printf("oops");
+//        exit(-1);
+//    }
+//
+//    if(r.entry_type != LOG_ACCESS) {
+//        printf("oops");
+//        exit(-1);
+//    }
+//
+//    return l.entry.access.varId < r.entry.access.varId;
+//}
+
 #endif

@@ -21,6 +21,9 @@ private:
 	int assoc;
 	int lineSize;
 	int tagMaskBits;
+    unsigned int numAccesses;
+    unsigned int totalBytesBroughtIn;
+    unsigned int totalBytesWasted;
 	void __access(size_t address, unsigned short accessSize, logentry accessLog);
 	void verboseSetOutput(size_t address, int setNum);
 	void verboseSpanningAccessOutput(size_t address, unsigned short accessSize, logentry accessLog);
@@ -39,5 +42,8 @@ public:
     int getNumSets();
     int getAssoc();
     int getCacheLineSize();
+    unsigned int getTotalBytesBroughtIn();
+    unsigned int getTotalBytesWasted();
+    unsigned int getNumAccesses();
 };
 #endif /* CACHE_H_ */

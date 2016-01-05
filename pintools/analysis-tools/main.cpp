@@ -160,14 +160,23 @@ void analyzeTrace() {
 //	cacheAnalyzer->summarizeLowUtilMap();
 //	cacheAnalyzer->printLineAccesses();
 //	cacheAnalyzer->printFunctionAccessCount();
-
+    
 	delete cacheAnalyzer;
 }
 
 void printStats() {
-    cacheAnalyzer->printFullCacheLines();
-    cacheAnalyzer->summarizeZeroReuseMap();
-    cacheAnalyzer->summarizeLowUtilMap();
+    //cacheAnalyzer->printFullCacheLines();
+    //cacheAnalyzer->summarizeZeroReuseMap();
+    //cacheAnalyzer->summarizeLowUtilMap();
+    cout << "-------------------------------" << endl;
+    cout << "Total bytes brought into cache:" << endl;
+    cout << "-------------------------------" << endl;
+    cacheAnalyzer->printTotalBytes();
+    cout << "-------------------------------" << endl;
+    cout << "Total bytes wasted:" << endl;
+    cout << "-------------------------------" << endl;
+    cacheAnalyzer->printWastedBytes();
+    cacheAnalyzer->printNumAccesses();
 }
 
 void printRawOutputDetails() {

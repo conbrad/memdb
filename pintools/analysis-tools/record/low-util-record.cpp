@@ -5,19 +5,20 @@
 
 using namespace std;
 
-LowUtilRecord::LowUtilRecord(std::string varInfo, std::size_t address, int byteUseCount) {
-	    mVarInfo = varInfo;
-	    mAddress = address;
-	    mByteUseCount = byteUseCount;
-	    this->variableName = AccessParser::variableNameFromInfo(varInfo);
-	    this->type = AccessParser::typeFromInfo(varInfo);
+LowUtilRecord::LowUtilRecord(logentry log, int byteUseCount) {
+	    this->log = log;
+        this->byteUseCount = byteUseCount;
 }
 
 std::ostream& operator<< (std::ostream& stream, const LowUtilRecord& lowReuseRecord) {
-	cout << "\t--------------------------------------------" << endl;
-	cout << "\t" << lowReuseRecord.mVarInfo << endl;
-	cout << "\t0x" << hex << lowReuseRecord.mAddress << dec << endl;
-	cout << "\t" << lowReuseRecord.mByteUseCount << "/" << CACHE_LINE_SIZE << endl;
+    if(lowReuseRecord.log.entry_type == LOG_ACCESS) {
+        cout << "\t" << lowReuseRecord.log.entry.access.varId << endl;
+    	cout << "\t0x" << hex << lowReuseRecord.log.entry.access.ptr << dec << endl;
+    }
+    if(lowReuseRecord.log.entry_type == LOG_ALLOC) {
+        cout << "\t" << lowReuseRecord.log.entry.alloc.size << endl;
+    	cout << "\t0x" << hex << lowReuseRecord.log.entry.alloc.addr << dec << endl;
+    }   
 }
 
 LowUtilRecord::~LowUtilRecord(){}

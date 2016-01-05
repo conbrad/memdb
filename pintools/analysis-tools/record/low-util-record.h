@@ -9,14 +9,16 @@
 #define LOW_REUSE_RECORD_H_
 
 #include "waste-record.h"
+#include "../util/binaryinstrumentation.h"
 #include <string>
 
 class LowUtilRecord: public WasteRecord {
 private:
-	int mByteUseCount;
+    logentry log;
+	int byteUseCount;
 
 public:
-	LowUtilRecord(std::string varInfo, std::size_t address, int byteUsedCount);
+	LowUtilRecord(logentry log, int byteUsedCount);
 	~LowUtilRecord();
 	friend std::ostream& operator<< (std::ostream& stream, const LowUtilRecord& lowReuseRecord);
 };

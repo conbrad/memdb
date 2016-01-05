@@ -46,7 +46,6 @@ private:
 	void clearLine();
 	void incrementFunctionCount(std::string functionName);
 	void printRawOutput();
-    void printAmountUsed();
 
 public:
 
@@ -55,6 +54,8 @@ public:
     bool valid(size_t address);
     void setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp);
     void evict();
+    int getSize();
+    int unused();
     std::size_t getVirtualTimeStamp();
     std::size_t amountUsed();
     void printParams();
@@ -64,6 +65,7 @@ public:
     void printLineAccesses();
     void printFaultingAccessInfo();
     void printWasteMaps();
+    std::string printAmountUsed();
 };
 
 #endif /* CACHE_LINE_H_ */
