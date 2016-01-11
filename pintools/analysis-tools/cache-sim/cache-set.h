@@ -20,30 +20,30 @@
 
 class CacheSet {
 private:
+	CacheLine *cacheLine;
+    enum AccessType { hit, miss };
+    int id;
 	int associativity;
 	int cacheLineSize;
+    int numMisses;
     size_t currentTime;	// a virtual time ticks every time someone accesses this cache set
-    unsigned int bytesBroughtIn;
+    unsigned int bytesTransferred;
     unsigned int bytesWasted;
-	CacheLine *cacheLine;
-
-	void attemptCacheAccess(size_t address, unsigned short accessSize);
 	bool cacheHit(size_t address, unsigned short accessSize);
 	void cacheMiss(size_t address, unsigned short accessSize, logentry accessLog);
-
+    void sendAccess(logentry accessLog, AccessType accessType);
 public:
     CacheSet();
-    CacheLine* findCleanOrVictim(size_t timeNow);
+    CacheLine* getLRUCacheLine();
     CacheLine* getCacheLine();
+    void setCacheSetID(int id);
+    void setCacheLineIDs();
     void printParams();
     void access(size_t address, unsigned short accessSize, logentry accessLog);
-    void printZeroReuseDetail();
-    void zeroReuseSummary(std::multimap <int, std::tuple<std::string, std::vector<ZeroReuseRecord>>> groupedZeroReuseMap);
-    void printLowUtilDetail();
-    void lowUtilSummary(std::multimap <int, std::tuple<std::string, std::vector<LowUtilRecord>>> groupedLowUtilMap);
-    std::string printCacheLineUsage();
-    unsigned int getBytesBroughtIn();
+    int getCacheSetID();
+    unsigned int getBytesTransferred();
     unsigned int getBytesWasted();
+    unsigned int getNumMisses();
 };
 
 #endif /* CACHE_SET_H_ */

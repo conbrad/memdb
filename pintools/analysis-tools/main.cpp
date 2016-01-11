@@ -119,10 +119,6 @@ void analyzeTrace() {
 
 	AccessLogReceiver accessLogReceiver(SOCKET_PATH);
 
-	if(WANT_RAW_OUTPUT) {
-		printRawOutputDetails();
-	}
-
 	// Receive logs over socket from instrumentation tool
 	logentry accessLog;
 	while(1) {
@@ -137,37 +133,12 @@ void analyzeTrace() {
         }
 
 		if(accessLog.entry_type == LOG_ACCESS) {
-			cacheAnalyzer->parseAndSimulate(accessLog);
-			//printf("Address: %p, size: %d\n", accessLog.entry.access.ptr,
-			//		AccessLogReceiver::sizeOf(accessLog.entry.access));
+			cacheAnalyzer->simulate(accessLog);
 		}
 	}
-
-//	traceFile.open(fileName);
-//	if (!traceFile.is_open()) {
-//		openFileError(fileName);
-//	}
-//	string line;
-//	while (!traceFormatConverter.isEof()) {
-//		//getline(traceFile, line);
-//		cacheAnalyzer->parseAndSimulate(traceFormatConverter.nextAccess());
-//	}
-//	traceFile.close();
-//	cacheAnalyzer->analyzeVariableAccesses();
-//	cacheAnalyzer->printMissTotal();
-//	cacheAnalyzer->printWasteMaps();
-//	cacheAnalyzer->summarizeZeroReuseMap();
-//	cacheAnalyzer->summarizeLowUtilMap();
-//	cacheAnalyzer->printLineAccesses();
-//	cacheAnalyzer->printFunctionAccessCount();
-    
-	delete cacheAnalyzer;
 }
 
 void printStats() {
-    //cacheAnalyzer->printFullCacheLines();
-    //cacheAnalyzer->summarizeZeroReuseMap();
-    //cacheAnalyzer->summarizeLowUtilMap();
     cout << "-------------------------------" << endl;
     cout << "Total bytes brought into cache:" << endl;
     cout << "-------------------------------" << endl;
@@ -177,16 +148,11 @@ void printStats() {
     cout << "-------------------------------" << endl;
     cacheAnalyzer->printWastedBytes();
     cacheAnalyzer->printNumAccesses();
+    cout << "-------------------------------" << endl;
+    cacheAnalyzer->printNumMisses();
+    cout << "-------------------------------" << endl;
 }
 
-void printRawOutputDetails() {
-	cout << left
-		 << setw(15) << "Bytes used:"
-	     << setw(25) << "Reuses Before Eviction:"
-	     << setw(45) << "Access site:"
-		 << setw(25) << "<Variable Info>:"
-		 << setw(0) << "Virtual Address:" << endl;
-}
 void noInputFileError() {
 	cerr << "Please provide input trace file with the -f option." << endl;
 	exit(-1);

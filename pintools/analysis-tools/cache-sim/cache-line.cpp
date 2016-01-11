@@ -16,133 +16,76 @@
 
 using namespace std;
 
-static map<string, int> functionAccessCount;
-
-map<int, vector<CacheLineAccess>> lineAccesses;
-map<int, map<FunctionLocation, vector<int>>> lineFunctionAccesses;
-
-typedef std::map<int, std::map<std::string, std::vector<CacheLineAccess>>> FunctionLineMap;
-FunctionLineMap lineAccessFunctions;
-
 CacheLine::CacheLine() {
-    /* this is ugly, but C++ doesn't
-     * allow to allocate an array and
-     * initialize all members with the
-     * same constructor at the same time.
-     *
-     * TODO Builder pattern for complex parameters
-    */
+    // TODO Builder pattern for complex parameters
 
-
-    /* Size is given in bytes */
+    // Size is given in bytes
 	lineSize = CACHE_LINE_SIZE;
 	address = 0;
 	tag = 0;
 	tagMaskBits = 0;
-    accessLog = { NULL_LOGENTRY };
 	initAccessSize = 0;
-    timesReusedBeforeEvicted = 0;
-	virtualTimeStamp = 0;
+    reused = 0;
+	timestamp = 0;
 	bytesUsed = new bitset<MAX_LINE_SIZE>(lineSize);
-	bytesUsed->reset();
 }
 
-
-/* Print info about the access that caused this line to be
- * brought into the cache */
-void CacheLine::printFaultingAccessInfo() {
-	cout << "0x" << hex << address << dec << " "
-		 << initAccessSize << " ";
+void CacheLine::setLineID(int id) {
+    this->id = id;
 }
 
-void CacheLine::setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp) {
+int CacheLine::getLineID() {
+    return id; 
+}
+
+void CacheLine::setTag(size_t address, unsigned short accessSize) {
+    this->tag = address >> tagMaskBits;
     this->address = address;
     this->initAccessSize = accessSize;
-    this->tag = address >> tagMaskBits;
-    this->accessLog = accessLog;
-    this->timesReusedBeforeEvicted = 0;
+    this->reused = 0;
     this->bytesUsed->reset();
-
-    int lineOffset = access(address, accessSize, timeStamp);
-}
-
-string CacheLine::printAmountUsed() {
-    std::stringstream usedRatio;
-    
-    usedRatio << bytesUsed->count();
-    usedRatio << "/";
-    usedRatio << MAX_LINE_SIZE;
-    usedRatio << "\n";
-
-    return usedRatio.str();
 }
 
 size_t CacheLine::amountUsed() {
     return bytesUsed->count();
 }
 
-
 bool CacheLine::valid(size_t address) {
     if(address >> tagMaskBits == tag) {
-    	return true;
+    	assert(tag > 0);
+        return true;
     }
     return false;
 }
 
-/* Set to '1' the bits corresponding to this address
- * within the cache line, to mark the corresponding bytes
- * as "accessed".
- * If those bits are already marked as accessed, we increment
- * the reuse counter.
- */
-int CacheLine::access(size_t address, unsigned short accessSize, size_t timeStamp) {
+// Bits set to 1 corresponding to address in cache line to denote them as accessed
+// If bits are set, increment reuse counter
+int CacheLine::access(size_t address, unsigned short accessSize, size_t timestamp) {
     int lineOffset = address % lineSize;
-
     assert(valid(address));
     assert(lineOffset + accessSize <= lineSize);
 
-    this->virtualTimeStamp = timeStamp;
+    this->timestamp = timestamp;
 
-    /* We only check if the first bit is set, assuming that if
-     * we access the same valid address twice, the data represents
-     * the same variable (and thus the same access size) as before
-     */
+    // If first bit is set, assume same variable (and its size) accessed before 
     if(bytesUsed->test(lineOffset)) {
-    	timesReusedBeforeEvicted++;
-    } else {
-        int byteThreshold = min(lineOffset + accessSize, lineSize);
-    	for(int i = lineOffset; i < byteThreshold; i++) {
-    		bytesUsed->set(i);
-    	}
+    	reused++;
+        return lineOffset;
     }
+
+    int byteThreshold = min(lineOffset + accessSize, lineSize);
+    for (int i = lineOffset; i < byteThreshold; i++) {
+        bytesUsed->set(i);
+    }
+
     return lineOffset;
 }
 
-void CacheLine::clearLine() {
-	address = 0;
-	tag = 0;
-    accessLog = { NULL_LOGENTRY };
-    timesReusedBeforeEvicted = 0;
-	bytesUsed->reset();
-}
-
 void CacheLine::evict() {
-
-    /* We are being evicted. Print our stats, update waste maps and clear. */
-    if(WANT_RAW_OUTPUT) {
-		printRawOutput();
-    }
-
-    if(timesReusedBeforeEvicted == 0) {
-    	WasteRecordCollection::
-            addZeroReuseRecord(accessLog, address);
-    }
-
-    if((float)(bytesUsed->count()) / (float)lineSize < LOW_UTIL_THRESHOLD) {
-    	WasteRecordCollection::
-            addLowUtilRecord(accessLog, address, bytesUsed->count());
-    }
-	clearLine();
+	address = 0;
+    tag = 0;
+    reused = 0;
+    bytesUsed->reset();
 }
 
 int CacheLine::getSize() {
@@ -153,15 +96,12 @@ int CacheLine::unused() {
     return lineSize - bytesUsed->count();
 }
 
-void CacheLine::printRawOutput() {
-	cout << left
-			<< setw(15) << bytesUsed->count()
-			<< setw(25)	<< timesReusedBeforeEvicted
-			<< setw(0)	<< "[" << "0x" << hex << address << dec << "]" << endl;
+size_t CacheLine::getTimestamp() {
+	return timestamp;
 }
 
-size_t CacheLine::getVirtualTimeStamp() {
-	return virtualTimeStamp;
+bool CacheLine::isClean() {
+    return timestamp == 0;
 }
 
 void CacheLine::printParams() {

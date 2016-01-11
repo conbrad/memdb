@@ -1,4 +1,5 @@
 /*
+ * <old>
  * This tool reads a file containing a memtracker trace, the text version. 
  * The trace has the following format:
  * <access_type> <tid> <addr> <size> <func> <access_source> <alloc_source> <name> <type>
@@ -11,6 +12,7 @@
  * - The number of times the cache line was reused. 
  * - The source code location, which caused this cache line to be created in the cache.
  * - The information on the variable that was accessed upon the faulting access. 
+ * </old>
  */
 
 #include <assert.h>
@@ -54,16 +56,14 @@
 
 using namespace std;
 
-
-multimap <int, tuple<string, vector<LowUtilRecord>>> groupedLowUtilMap;
-
-
-/* We are assuming the memtracker trace output, the text
+/* <old>
+ * We are assuming the memtracker trace output, the text
  * version. It has the following format:
  *
  * <access_type> <tid> <addr> <size> <func>
  * <access_source> <alloc_source> <name> <type>
- */
+ * </old>
+ 
 const int TID = 1;
 const int ADDRESS = 2;
 const int SIZE = 3;
@@ -72,101 +72,24 @@ const int ACCESS_SOURCE = 5;
 const int ALLOC_SOURCE = 6;
 const int NAME = 7;
 const int TYPE = 8;
+ */
 
 CacheWasteAnalysis::CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize) {
-	word = accessSite = varInfo = "";
-	accessSize = 0;
-    address = 0;
     cache = new Cache(numSets, assoc, cacheLineSize);
     cache->printParams();
 }
 
-CacheWasteAnalysis::~CacheWasteAnalysis() {
-    delete cache;
-}
+void CacheWasteAnalysis::simulate(logentry accessLog) {
+    size_t address = (size_t) accessLog.entry.access.ptr;
 
-void CacheWasteAnalysis::parseAndSimulate(logentry accessLog) {
-//    istringstream str(line);
-    string word;
-    size_t address;
-    unsigned short accessSize;
-    string accessSite;
-    string varInfo;
-//
-//    /* Let's determine if this is an access record */
-//    if(str.eof()) {
-//    	return;
-//    }
-//
-//    str >> word;
-//    if(!(word.compare("read:") == 0) && !(word.compare("write:") == 0)) {
-//    	return;
-//    }
-//
-//    int lineColumn = TID;
-//    while(!str.eof()) {
-//		str >> word;
-//
-//		switch(lineColumn++) {
-//			case TID:	    // Skip the tid
-//				break;
-//			case ADDRESS:
-//				address = strtol(word.c_str(), 0, 16);
-//				if(errno == EINVAL || errno == ERANGE) {
-//					cerr << "The following line caused error when parsing address: " << endl;
-//					cerr << line << endl;
-//					exit(-1);
-//				}
-//				break;
-//			case SIZE:
-//				accessSize = (unsigned short) strtol(word.c_str(), 0, 10);
-//				if(errno == EINVAL || errno == ERANGE) {
-//					cerr << "The following line caused error when parsing access size: " << endl;
-//					cerr << line << endl;
-//					exit(-1);
-//				}
-//				break;
-//			// FUNCTION and ACCESS_SOURCE are one token
-//			case FUNCTION:
-//			case ACCESS_SOURCE:
-//				accessSite += word + " ";
-//				break;
-//			// ALLOC_SOURCE, NAME and TYPE are one token
-//			case ALLOC_SOURCE:
-//			case NAME:
-//			case TYPE:
-//				varInfo += word + " ";
-//				break;
-//		}
-//    }
-//
-//    if(VERBOSE) {
-//    	verboseOutput(line);
-//    }
-    address = (size_t) accessLog.entry.access.ptr;
-    accessSize = (unsigned short) AccessLogReceiver::sizeOf(accessLog.entry.access);
+    // TODO getting the wrong size?
+    unsigned short accessSize = (unsigned short) AccessLogReceiver::sizeOf(accessLog.entry.access);
 
     cache->access(address, accessSize, accessLog);
 }
-void CacheWasteAnalysis::analyzeVariableAccesses() {
-	// TODO 50 is just for testing, remove and support user inputed number
-	VariableAnalyzer::cacheMissesPerVariable(50);
-	VariableAnalyzer::analyzeVariables(cache->getNumSets(),
-									   cache->getAssoc(),
-									   cache->getCacheLineSize());
-}
 
-//void CacheWasteAnalysis::printFunctionAccessCount() {
-//	cache->printFunctionAccessCount();
-//}
-//void CacheWasteAnalysis::printLineAccesses() {
-//	cache->printLineAccesses();
-//}
 void CacheWasteAnalysis::printWasteMaps() {
 	WasteRecordCollection::printWasteMaps();
-}
-void CacheWasteAnalysis::printFullCacheLines() {
-    cache->printFullCacheLines();
 }
 
 void CacheWasteAnalysis::summarizeZeroReuseMap() {
@@ -196,15 +119,10 @@ void CacheWasteAnalysis::printWastedBytes() {
     cout << cache->getTotalBytesWasted() << endl;
 }
 
-void CacheWasteAnalysis::inputError() {
-	cout << "Error parsing input: " << word << endl;
+void CacheWasteAnalysis::printNumMisses() {
+    cout << cache->getNumMisses() << endl;
 }
 
-void CacheWasteAnalysis::verboseOutput(const string& line) {
-	cout << line << endl;
-	cout << "Parsed: " << endl;
-	cout << hex << "0x" << address << dec << endl;
-	cout << accessSize << endl;
-	cout << accessSite << endl;
-	cout << varInfo << endl;
+CacheWasteAnalysis::~CacheWasteAnalysis() {
+    delete cache;
 }

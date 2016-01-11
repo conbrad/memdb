@@ -22,50 +22,38 @@
 #include "function-location.h"
 
 const float LOW_UTIL_THRESHOLD = 0.5;
-const int NULL_LOGENTRY = 0;
 class CacheLine {
 
 private:
+    int id;
     int lineSize;						// in bytes
-    int tagMaskBits;					// in bytes
+    int tagMaskBits;					 
 
     std::size_t address;				// virtual address responsible for populating this cache line */
     std::size_t tag;
-    std::size_t virtualTimeStamp;		// virtual time of access
-    logentry accessLog;
-    unsigned short initAccessSize;	    // The size of the access that brought this line into cache
-    unsigned short timesReusedBeforeEvicted;
-    static const int FUNCTION_CALL_THRESHOLD = 0;
+    std::size_t timestamp;		        // virtual time of access
+    unsigned short initAccessSize;	    // size of the access that brought this line into cache
+    unsigned short reused;
 
-    /* This is a bitmap. There is a bit for each byte in the
-     * cache line. If a byte sitting in the cache line is
-     * accessed by the user program, we mark it as "accessed"
-     * by setting the corresponding bit to "1".
-    */
+    // Bit for each byte in cache line, if byte is accessed, set it
+    // If already set, it has been accessed before
     std::bitset<MAX_LINE_SIZE> *bytesUsed;
-	void clearLine();
-	void incrementFunctionCount(std::string functionName);
-	void printRawOutput();
 
 public:
 
     CacheLine();
-    int access(size_t address, unsigned short accessSize, size_t timeStamp);
-    bool valid(size_t address);
-    void setAndAccess(size_t address, unsigned short accessSize, logentry accessLog, size_t timeStamp);
+    void setTag(size_t address, unsigned short accessSize);
     void evict();
+    void setLineID(int id);
+    bool valid(size_t address);
+    bool isClean();
+    int access(size_t address, unsigned short accessSize, size_t timeStamp);
     int getSize();
     int unused();
-    std::size_t getVirtualTimeStamp();
+    int getLineID();
+    std::size_t getTimestamp();
     std::size_t amountUsed();
     void printParams();
-    void summarizeZeroReuseMap();
-    void summarizeLowUtilMap();
-    void printFunctionAccessCounts();
-    void printLineAccesses();
-    void printFaultingAccessInfo();
-    void printWasteMaps();
-    std::string printAmountUsed();
 };
 
 #endif /* CACHE_LINE_H_ */

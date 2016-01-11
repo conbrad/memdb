@@ -15,30 +15,22 @@ const int VERBOSE = 0;
 
 class CacheWasteAnalysis {
 private:
-    std::string word;
-    std::string accessSite;
-    std::string varInfo;
     Cache *cache;
-    size_t address;
-    unsigned short accessSize;
-	void verboseOutput(const std::string& line);
-	void inputError();
 
 public:
 	CacheWasteAnalysis(int numSets, int assoc, int cacheLineSize);
 	~CacheWasteAnalysis();
-	void parseAndSimulate(logentry accessLog);
-	void printWasteMaps();
+	void simulate(logentry accessLog);
+	// <unused>
+    void printWasteMaps();
 	void summarizeZeroReuseMap();
 	void summarizeLowUtilMap();
-    void printFullCacheLines();
-	void printLineAccesses();
-	void printFunctionAccessCount();
-	void analyzeVariableAccesses();
+    // </unused>
 	void printMissTotal();
     void printTotalBytes();
     void printWastedBytes();
     void printNumAccesses();
+    void printNumMisses();
 };
 
 #endif /* CACHE_WASTE_ANALYSIS_H_ */

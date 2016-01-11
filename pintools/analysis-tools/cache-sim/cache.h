@@ -45,5 +45,7 @@ public:
     unsigned int getTotalBytesBroughtIn();
     unsigned int getTotalBytesWasted();
     unsigned int getNumAccesses();
+    unsigned int getNumMisses();
+    void setCacheSetIDs();
 };
 #endif /* CACHE_H_ */

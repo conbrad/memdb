@@ -14,16 +14,28 @@ Cache::Cache(int numSets, int assoc, int lineSize) {
 	this->assoc = assoc;
 	this->lineSize = lineSize;
 	this->set = new CacheSet[numSets];
+    
+    setCacheSetIDs(); 
+
     totalBytesBroughtIn = 0;
     totalBytesWasted = 0;
     numAccesses = 0;
-	tagMaskBits = log2(lineSize) + log2(numSets);	// how many bits we have to shift the address to compute the tag
+
+    // Bits we have to shift the address to compute the tag
+	tagMaskBits = log2(lineSize) + log2(numSets);	
+}
+
+void Cache::setCacheSetIDs() {
+    for(int i = 0; i < numSets; i++) {
+        set[i].setCacheSetID(i);
+    }
 }
 
 void Cache::access(size_t address, unsigned short accessSize, logentry accessLog) {
+   
     numAccesses++;
-    /* See if the access spans two cache lines.
-     */
+
+    // See if the access spans two cache lines     
     int lineOffset = address % lineSize;
 
     if(lineOffset + accessSize <= lineSize) {
@@ -31,62 +43,25 @@ void Cache::access(size_t address, unsigned short accessSize, logentry accessLog
     	return;
     }
 
-    /* If we are here, we have a spanning access.
-     * Determine the address of the first byte that
-     * spills into another cache line.
-     */
-    uint16_t bytesFittingIntoFirstLine = lineSize - lineOffset;
-    size_t addressOfFirstByteNotFitting = address + bytesFittingIntoFirstLine;
-    uint16_t sizeOfSpillingAccess = accessSize - bytesFittingIntoFirstLine;
+    // Determine the address of the first byte that spills into another cache line
+    uint16_t firstLineBytes = lineSize - lineOffset;
+    size_t  addressOfExtraBytes = address + firstLineBytes;
+    uint16_t sizeOfExtraAccess = accessSize - firstLineBytes;
 
-    if(VERBOSE) {
-    	verboseSpanningAccessOutput(address, accessSize, accessLog);
-    	verboseSplitAccessOutput(address, bytesFittingIntoFirstLine);
-    	verboseSpilledAccessOutput(addressOfFirstByteNotFitting, sizeOfSpillingAccess);
-    }
+    // Split into two accesses
+    __access(address, firstLineBytes, accessLog);
 
-    /* Split them into two accesses */
-    __access(address, bytesFittingIntoFirstLine, accessLog);
-
-    /* We recursively call this function in case the spilling access
-     * spans more than two lines. */
-    access(addressOfFirstByteNotFitting, sizeOfSpillingAccess, accessLog);
-}
-void Cache::verboseSpanningAccessOutput(size_t address, unsigned short accessSize,
-		logentry accessLog) {
-	cerr << "SPANNING ACCESS: 0x" << hex << address
-			<< dec << " " << accessSize << endl;
+    // Recur on spilling access
+    access(addressOfExtraBytes, sizeOfExtraAccess, accessLog);
 }
 
-void Cache::verboseSplitAccessOutput(size_t address, uint16_t bytesFittingIntoFirstLine) {
-	cerr << "Split into: " << endl;
-	cerr << "\t0x" << hex << address << dec << " "
-			<< bytesFittingIntoFirstLine << endl;
-}
-
-void Cache::verboseSpilledAccessOutput(size_t addressOfFirstByteNotFitting, uint16_t sizeOfSpillingAccess) {
-	cerr << "\t0x" << hex << addressOfFirstByteNotFitting << dec << " "
-	    			<< sizeOfSpillingAccess << endl;
-}
-
-/* Here we assume that accesses would not be spanning cache
- * lines. The calling function should have taken care of this.
- */
-void Cache::__access(size_t address, unsigned short accessSize, logentry accessLog) {
-    /* Locate the set that we have to access */
+ // Fits into single cache line
+void Cache::__access(size_t address, unsigned short accessSize, logentry accessLog) {    
+    // Locate the set that we have to access
     int setNum = (address >> (int)log2(lineSize)) % numSets;
-
     assert(setNum < numSets);
 
-    if(VERBOSE) {
-    	verboseSetOutput(address, setNum);
-    }
-
     set[setNum].access(address, accessSize, accessLog);
-}
-
-void Cache::verboseSetOutput(size_t address, int setNum) {
-	cout << hex << address << dec << " maps into set #" << setNum << endl;
 }
 
 int Cache::getNumSets() {
@@ -107,31 +82,26 @@ unsigned int Cache::getNumAccesses() {
 
 unsigned int Cache::getTotalBytesBroughtIn() {
     totalBytesBroughtIn = 0;
-    for (int i = 0; i < assoc; i++) {
-        totalBytesBroughtIn += set[i].getBytesBroughtIn();
+    for (int i = 0; i < numSets; i++) {
+        totalBytesBroughtIn += set[i].getBytesTransferred();
     }
     return totalBytesBroughtIn;
 }
 
 unsigned int Cache::getTotalBytesWasted() {
     totalBytesWasted = 0; 
-    for (int i = 0; i < assoc; i++) {
+    for (int i = 0; i < numSets; i++) {
         totalBytesWasted += set[i].getBytesWasted();
     }
     return totalBytesWasted;
 }
 
-void Cache::printFullCacheLines() {
-    ofstream cacheLineUsage;
-    cacheLineUsage.open("cache-line-usage.txt");
-    cacheLineUsage << "Cache line usage: " << endl;
+unsigned int Cache::getNumMisses() {
+    unsigned int totalMisses = 0;
     for (int i = 0; i < numSets; i++) {
-        cacheLineUsage << "Set: " << i << endl;
-        cacheLineUsage << "----------" << endl;
-        cacheLineUsage << set[i].printCacheLineUsage();
-        cacheLineUsage << "----------" << endl;
+        totalMisses += set[i].getNumMisses();
     }
-    cacheLineUsage.close();
+    return totalMisses;
 }
 
 void Cache::printParams() {
